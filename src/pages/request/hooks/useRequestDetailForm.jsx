@@ -133,12 +133,37 @@ export const useRequestDetailForm = () => {
   const [teethTypeCode, setTeethTypeCode] = useState([]);
   const [millingTypeCode, setMillingTypeCode] = useState([]);
 
-  const [keyTooths, setKeyTooths] = useState(0); // 임시key 사용안함 추후 삭제
+  const [keyTooths, setKeyTooths] = useState(0);
   const toothsRef = useRef();
 
-  const [activeIndex, setActiveIndex] = useState(0); // 탭 index
+  const [activeIndex, setActiveIndex] = useState(0);
   const [files, setFiles] = useState([]);
-  const [delFiles, setDelFiles] = useState([]); // 삭제된 파일
+  const [delFiles, setDelFiles] = useState([]);
+
+  // 파일 중복 제거 함수 추가
+  const removeDuplicateFiles = (fileList) => {
+    const uniqueFiles = [];
+    const fileMap = new Map();
+    
+    fileList.forEach(file => {
+      // 파일 식별자로 이름과 크기 조합 사용
+      const fileKey = `${file.fileName}_${file.fileSize}`;
+      
+      // 이미 처리된 파일이 아닌 경우에만 추가
+      if (!fileMap.has(fileKey)) {
+        fileMap.set(fileKey, true);
+        uniqueFiles.push(file);
+      }
+    });
+    
+    return uniqueFiles;
+  };
+
+  // 중복 제거를 포함한 파일 설정 함수
+  const setFilesWithNoDuplicates = (newFiles) => {
+    const uniqueFiles = removeDuplicateFiles(newFiles);
+    setFiles(uniqueFiles);
+  };
 
   const [agree, setAgree] = useState({
     isConfirm: { value: false, type: 'boolean', isRequired: true, error: '', check: 1, success: 0, checkMessage: '필수항목 동의 후 저장이 가능합니다.' },
@@ -656,8 +681,6 @@ export const useRequestDetailForm = () => {
         }
 
         if (state?.requestDc) {
-
-
           setParams((prevParams) => {
             const updatedValue = [...state?.params];
             const act = state?.params.findIndex((el) => el.active);
@@ -726,7 +749,9 @@ export const useRequestDetailForm = () => {
         fileUrl: el.fileUrl,
       };
     });
-    setFiles(files);
+    
+    // 파일 목록 설정 시 중복 제거 함수 사용
+    setFilesWithNoDuplicates(files);
 
     setApiResponse(dt);
     setParams(j);
@@ -870,7 +895,10 @@ export const useRequestDetailForm = () => {
       return;
     }
 
-    files.forEach((f) => {
+    // 파일 목록 중복 제거
+    const uniqueFiles = removeDuplicateFiles(files);
+
+    uniqueFiles.forEach((f) => {
       formData.append('files', f.file);
     });
 
@@ -884,7 +912,8 @@ export const useRequestDetailForm = () => {
     formData.append('requestNumber', p[0].requestNumber.value);
     formData.append('docList', JSON.stringify(docList));
     formData.append('saveAt', 'N');
-    formData.append('files', files);
+    // 중복 파일 추가 제거 (수정 사항)
+    // formData.append('files', files);
     formData.append('requestJsonDc', JSON.stringify(p));
 
     actions.setLoading(true);
@@ -926,7 +955,11 @@ export const useRequestDetailForm = () => {
     const docList = params.map((p) => convertData(p));
 
     formData.append('requestNumber', p[0].requestNumber.value);
-    files.forEach((f) => {
+    
+    // 파일 목록 중복 제거
+    const uniqueFiles = removeDuplicateFiles(files);
+    
+    uniqueFiles.forEach((f) => {
       formData.append('files', f.file);
     });
 
@@ -934,6 +967,8 @@ export const useRequestDetailForm = () => {
 
     formData.append('docList', JSON.stringify(docList));
     formData.append('saveAt', 'Y');
+    // 중복 파일 추가 제거 (수정 사항)
+    // formData.append('files', files);
     formData.append('requestJsonDc', JSON.stringify(p));
 
     actions.setLoading(true);
@@ -972,7 +1007,7 @@ export const useRequestDetailForm = () => {
     activeIndex,
     maxFile,
     files,
-    setFiles,
+    setFiles: setFilesWithNoDuplicates, // 중복 제거 함수를 대신 제공
     delFiles,
     setDelFiles,
     handleToggle,
