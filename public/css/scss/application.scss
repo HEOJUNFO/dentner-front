@@ -1,0 +1,24 @@
+/*===================================================================
+* INFORMATION: ;
+* -------------------------------------------------------------------
+* @File Name:application.scss
+* @Description : css 랜더링용
+* @Create Date: 2024-06-04
+* @Last Update Date: N/A
+* @History: N/A
+* -------------------------------------------------------------------
+* font	      : 폰트 정의
+* common	  : 초기화 및 변수선언 & component
+* layout	  : 본창 & 윈도우 팝업 레이아웃, 에러 화면
+* join	      : 로그인, 회원가입 등
+* popup	      : 레이어팝업 / 윈도우 팝업 관련 된것만
+* sub	      : 각 화면별 정의
+* main	      : 메인화면, 마이페이지
+* application : css 랜더링용  
+* ====================================================================*/
+@charset "UTF-8";
+@import 'font';   
+@import 'common';
+@import 'layout';
+@import 'sub';
+@import 'main';

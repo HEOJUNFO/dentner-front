@@ -1,0 +1,39 @@
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Pagenation, BaseInput, BaseSelect, BaseButton } from '@components/common';
+import TransactionHistory from './components/TransactionHistory';
+
+/**
+ * 공개요청
+ * @param {*} param0
+ * @returns
+ */
+const PaymentPublic = ({ items = [], user = {}, total, perPage, currentPage, onPageChange }) => {
+  const stss = [
+    { name: '진행상태 전체', value: 0 },
+    { name: '견적 요청중', value: 1 },
+    { name: '치자이너 선택중', value: 2 },
+    { name: '거래중', value: 3 },
+    { name: '거래완료', value: 4 },
+    { name: '거래취소', value: 5 },
+    { name: '거래취소 승인 대기중', value: 6 },
+    { name: '요청마감', value: 7 },
+  ];
+  const tems = [
+    { name: '전체', value: 0 },
+    { name: '1개월', value: 1 },
+    { name: '3개월', value: 2 },
+    { name: '6개월', value: 3 },
+    { name: '1년', value: 4 },
+    { name: '기간 지정', value: 5 },
+  ];
+
+  return (
+    <>
+      <TransactionHistory items={items} type={user?.memberSe} />
+
+      {total > 0 && <Pagenation total={total} perPage={perPage} currentPage={currentPage} onPageChange={onPageChange} />}
+    </>
+  );
+};
+
+export default PaymentPublic;

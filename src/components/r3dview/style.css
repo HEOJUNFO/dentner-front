@@ -1,0 +1,21 @@
+.container {
+  overflow-y: auto;
+}
+.container::-webkit-scrollbar {
+  width: 6px;
+}
+.container::-webkit-scrollbar-track {
+  background-color: gray;
+}
+.container::-webkit-scrollbar-thumb {
+  background-color: cyan;
+}
+.container::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* hover 효과 */
+.container::-webkit-scrollbar-thumb:hover {
+  background-color: blue;
+  transition: all 0.2s; /* 작동 안 됨 */
+}

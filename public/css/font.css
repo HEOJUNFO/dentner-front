@@ -1,0 +1,46 @@
+@charset "utf-8";
+
+/* =================================================================================
+* INFORMATION
+* -----------------------------------------------------------------------
+* @File Name: font.css
+* @Version: 1.0
+* @Create Date: 2022-09-25
+* @Update Date: N/A
+* @History: N/A
+* ================================================================================= */
+/* ===== Webfont ===== */
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 700;
+	font-display: swap;
+	src: url('../font/Pretendard-Bold.eot'), url('../font/Pretendard-Bold.woff2') format('font-woff2'), url('../font/Pretendard-Bold.woff') format('woff'), url('../font/Pretendard-Bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 600;
+	font-display: swap;
+	src: url('../font/Pretendard-SemiBold.woff2') format('woff2'), url('../font/Pretendard-SemiBold.woff') format('woff'), url('../font/Pretendard-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 500;
+	font-display: swap;
+	src: url('../font/Pretendard-Medium.eot'), url('../font/Pretendard-Medium.woff2') format('font-woff2'), url('../font/Pretendard-Medium.woff') format('woff'), url('../font/Pretendard-Medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 400;
+	font-display: swap;
+	src: url('../font/Pretendard-Regular.eot'), url('../font/Pretendard-Regular.woff2') format('font-woff2'), url('../font/Pretendard-Regular.woff') format('woff'), url('../font/Pretendard-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-weight: 300;
+	font-display: swap;
+	src: local('../font/Pretendard-Light.eot'), url('../font/Pretendard-Light.woff2') format('woff2'), url('../font/Pretendard-Light.woff') format('woff'), url('../font/Pretendard-Light.ttf') format('truetype');
+}
