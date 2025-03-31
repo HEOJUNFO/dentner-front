@@ -82,11 +82,18 @@ const CenterPage = () => {
             <h3>{t('center_page.total_dentalLab')}</h3>
             <TableSorting items={sortingItems} defaultValue={sortType} eventType="click" />
           </div>
-          <DentalStudio items={items} type={sortType} total={total} perPage={perPage} currentPage={currentPage} onPageChange={(page) => {
-            const startRow = (page - 1) * perPage;
-            setParams((prev) => ({...prev, startRow }))
-            setCurrentPage(page)
-          }} />
+          <DentalStudio 
+  items={items} 
+  type={sortType === 0 || sortType === 1 ? sortType : 0} 
+  total={total} 
+  perPage={perPage} 
+  currentPage={currentPage} 
+  onPageChange={(page) => {
+    const startRow = (page - 1) * perPage;
+    setParams((prev) => ({...prev, startRow }))
+    setCurrentPage(page)
+  }} 
+/>
         </WrapListBox>
       </section>
 
