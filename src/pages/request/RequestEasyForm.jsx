@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { BaseInput, BaseSelect, ItemTag, BaseButton, ImageSettingEx, ModalPresent, BaseTextArea } from '@components/common';
-import { RadioFilter, FileUpload, CheckSet } from '@components/ui';
+import { RadioFilter,  CheckSet } from '@components/ui';
+import FileUpload2 from '../../components/ui/components/FileUpload2';
 
 import InquireTipModal from '../../components/ui/modal/InquireTipModal';
 import TemporaryModal from '../../components/ui/modal/TemporaryModal';
@@ -45,9 +46,6 @@ const RequestEasyForm = () => {
   const [isModal, setIsModal] = useState(false);
   const [isModal2, setIsModal2] = useState(false);
   const [isModal3, setIsModal3] = useState(false);
-
-
-  console.log(params?.typeList?.value)
 
   return (
     <>
@@ -215,35 +213,7 @@ const RequestEasyForm = () => {
                   </em>
                 </dt>
                 <dd>
-                  {/* <ImageSettingEx imgFileList={imgFileList} setImgFileList={setImgFileList} /> */}
-                  <FileUpload
-                    isMust={true}
-                    fileList={files}
-                    setFileList={setFiles}
-                    delFileList={delFiles}
-                    setDelFileList={setDelFiles}
-                    maxFile={maxFile}
-                    maxSize={500}
-                    fileTypes={['pdf', 'jpg', 'png', 'zip', 'stl', 'obj', 'ply', 'dcm']}
-                    label={
-                      <label className="inq">
-                        <strong>{t('version2_1.text27')}</strong> {`(zip${t('version2_2.text36')}, 500MB ${t('version2_2.text37')})`}
-                      </label>
-                    }
-                    guide={
-                      <em className="guide">
-                        <div>
-                          <>
-                            {`[${t('version2_2.text41')}]`} <i>{t('version2_2.text38')}</i> / {`[${t('version2_2.text40')}]`} <i>{t('version2_2.text39')}</i>{' '}
-                          </>
-                          <br />
-                          <>
-                            {`[${t('version2_2.text42')}]`} <i>pdf, jpg, png, zip, stl, obj, ply, dcm</i>
-                          </>
-                        </div>
-                      </em>
-                    }
-                  />
+                  <FileUpload2/>
                 </dd>
               </dl>
               <dl>
@@ -254,21 +224,6 @@ const RequestEasyForm = () => {
                   <div>
                     <CheckSet id={'isConfirm'} onChange={handleCheck} value={params?.isConfirm.value} label={t('version2_2.text44')} />
                   </div>
-                  {/* <div>
-                    <CheckSet
-                      id={'isTemp'}
-                      onChange={handleCheck}
-                      value={params?.isTemp.value}
-                      label={
-                        '의뢰인]은, [환자]의 의료정보, 민감정보 또는 개인정보인 [보철물 의뢰에 필요한 의뢰서, 3D File]을 개인정보 보호법 제17조에 따라 [환자]로부터 제3자인 주식회사 덴트너에 제공하는 것에 대하여 명시적이고 구체적인 동의를 받았음을 확인합니다.'
-                      }
-                    />
-                    <BaseButton label="양식 보기" />
-                  </div>
-                  <div>
-                    <em>* 주식회사 덴트너와 개인정보 업무위탁 계약관리를 체결하면, 환자에게 매번 '개인정보 제 3자 제공 동의서'를 받지 않아도 됩니다. </em>
-                    <BaseButton label="자세히 보기" />
-                  </div> */}
                 </dd>
               </dl>
             </div>

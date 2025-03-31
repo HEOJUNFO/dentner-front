@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BaseInput, ItemTag, BaseButton, ImageSettingEx, BaseSelect, BaseTextArea } from '@components/common';
-import { RadioFilter, FileUpload, RadioSet, CheckSet } from '@components/ui';
+import { RadioFilter,  RadioSet, CheckSet } from '@components/ui';
+import FileUpload2 from '../../components/ui/components/FileUpload2';
 import InquireTipModal from '../../components/ui/modal/InquireTipModal';
 import TemporaryModal from '../../components/ui/modal/TemporaryModal';
 import OftenDTModal from '../../components/ui/modal/OftenDTModal';
@@ -413,33 +414,7 @@ const InquireWritePage = () => {
                   </em>
                 </dt>
                 <dd>
-                  <FileUpload
-                    isMust={true}
-                    fileList={files}
-                    setFileList={setFiles}
-                    delFileList={delFiles}
-                    setDelFileList={setDelFiles}
-                    maxFile={maxFile}
-                    fileTypes={['pdf', 'jpg', 'png', 'zip', 'stl', 'obj', 'ply', 'dcm']}
-                    label={
-                      <label className="inq">
-                        <strong>{t('version2_1.text27')}</strong> {`(zip${t('version2_2.text36')}, 500MB ${t('version2_2.text37')})`}
-                      </label>
-                    }
-                    guide={
-                      <em className="guide">
-                        <div>
-                          <>
-                            {`[${t('version2_2.text41')}]`} <i>{t('version2_2.text38')}</i> / {`[${t('version2_2.text40')}]`} <i>{t('version2_2.text39')}</i>{' '}
-                          </>
-                          <br />
-                          <>
-                            {`[${t('version2_2.text42')}]`} <i>pdf, jpg, png, zip, stl, obj, ply, dcm</i>
-                          </>
-                        </div>
-                      </em>
-                    }
-                  />
+                  <FileUpload2/>
                 </dd>
               </dl>
               <dl>
