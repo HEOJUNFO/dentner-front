@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import UserStore from '@store/UserStore';
 
@@ -13,6 +13,7 @@ export const useHeader = () => {
 
   const [login, setLogin] = useState(false);
   const [isOpen, setisOpen] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
 
   const toggleDrawer = () => {
     setisOpen((prevState) => !prevState);
@@ -23,69 +24,121 @@ export const useHeader = () => {
     else setLogin(false);
   }, [user]);
 
-  useEffect(() => {
-    if (login) {
-    }
-  }, [login]);
-
   const [input, setInput] = useState('');
   const client = useRef(null);
+  const reconnectTimer = useRef(null);
 
   // 서버 URL을 설정하세요 (WebSocket 서버 URL로 대체)
   const SOCKET_URL = import.meta.env.VITE_WS_URL;
 
-  // STOMP 클라이언트 설정
-  useEffect(() => {
-    if (!user) return;
-    try {
-      const socket = new SockJS(SOCKET_URL); // WebSocket 연결
-      client.current = Stomp.over(socket);
-
-      client.current.connect({}, onConnected, onError);
-      // 컴포넌트가 언마운트될 때 연결 해제
-      return () => {
-        if (client.current) {
-          client.current.disconnect();
-        }
-      };
-    } catch (e) {
-      console.log(e);
-    }
-  }, [user]);
-
   let reconnectAttempts = 0;
-  const MAX_RECONNECT_ATTEMPTS = 10;
-
-  const reconnect = () => {
-    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
-      setTimeout(() => {
-        // console.log(`Reconnecting... attempt ${reconnectAttempts + 1}`);
-        reconnectAttempts += 1;
-        client.current.connect({}, onConnected, onError); // 재연결 시도
-      }, 5000); // 5초 후에 재연결 시도
-    } else {
-      console.log('Max reconnect attempts reached. Stopping...');
-    }
-  };
+  const MAX_RECONNECT_ATTEMPTS = 5; // 재연결 시도 횟수 감소
+  const RECONNECT_DELAY = 5000; // 5초
 
   // 연결 성공 시 호출되는 함수
   const onConnected = () => {
-    // console.log('Connected');
-    client.current.subscribe(`/topic/updates/${user.memberNo}`, onMessageReceived); // 채팅방 구독
+    console.log('WebSocket 연결 성공');
+    reconnectAttempts = 0; // 연결 성공 시 카운터 초기화
+    setSocketConnected(true);
+    
+    if (user && user.memberNo) {
+      client.current.subscribe(`/topic/updates/${user.memberNo}`, onMessageReceived);
+    }
   };
 
   // 연결 오류 시 호출되는 함수
   const onError = (error) => {
-    console.error('Could not connect to WebSocket server. Please refresh this page to try again!', error);
-    reconnect();
+    console.error('WebSocket 연결 실패:', error);
+    setSocketConnected(false);
+    
+    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      console.log(`재연결 시도 ${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS}`);
+      
+      // 이전 타이머 정리
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+      }
+      
+      reconnectTimer.current = setTimeout(() => {
+        reconnectAttempts += 1;
+        connectWebSocket();
+      }, RECONNECT_DELAY);
+    } else {
+      console.log('최대 재연결 시도 횟수에 도달했습니다.');
+    }
   };
 
   // 메시지 수신 시 호출되는 함수
   const onMessageReceived = (message) => {
-    // const receivedMessage = JSON.parse(message.body);
-    // setMessages((prevMessages) => [...prevMessages, receivedMessage]);
     setMessage(true);
   };
 
-  return { location, navigate, login, isOpen, setisOpen, toggleDrawer, user, mileage, designerMileage };
+  const connectWebSocket = () => {
+    if (!user || !user.memberNo) return;
+    
+    try {
+      // 기존 연결 정리
+      if (client.current && client.current.connected) {
+        client.current.disconnect();
+      }
+      
+      console.log('WebSocket 연결 시도:', SOCKET_URL);
+      
+      // SockJS 옵션 설정
+      // 웹소켓 팩토리 함수 생성 (자동 재연결 지원을 위해)
+      const socketFactory = () => {
+        const sockOptions = {
+          transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
+          timeout: 10000 // 연결 타임아웃 10초로 설정
+        };
+        return new SockJS(SOCKET_URL, null, sockOptions);
+      };
+      
+      // 최신 Stomp.js API를 사용하여 클라이언트 생성
+      client.current = Stomp.over(socketFactory);
+      
+      // 디버깅 로그 비활성화 (빈 함수 사용)
+      client.current.debug = () => {};
+      
+      // 연결 설정
+      const connectHeaders = {};
+      client.current.connect(connectHeaders, onConnected, onError);
+    } catch (e) {
+      console.error('WebSocket 초기화 오류:', e);
+      onError(e);
+    }
+  };
+
+  // STOMP 클라이언트 설정
+  useEffect(() => {
+    if (!user) return;
+    
+    connectWebSocket();
+    
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+      }
+      
+      if (client.current) {
+        client.current.disconnect();
+      }
+      
+      setSocketConnected(false);
+    };
+  }, [user]);
+
+  return { 
+    location, 
+    navigate, 
+    login, 
+    isOpen, 
+    setisOpen, 
+    toggleDrawer, 
+    user, 
+    mileage, 
+    designerMileage,
+    socketConnected // 소켓 연결 상태 추가
+  };
 };
