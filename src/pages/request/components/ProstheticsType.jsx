@@ -3,23 +3,27 @@ import { BaseInput, BaseButton, BaseSelect } from '@components/common';
 import { useProstheticsType } from '../hooks/useProstheticsType';
 import { useTranslation } from 'react-i18next';
 
-const DirectInput = forwardRef(({ onChange, value, maskingValue, error }, ref) => {
+const DirectInput = forwardRef(({ onChange, value, maskingValue, error, disabled }, ref) => {
   const { t, i18n } = useTranslation();
   const parts = value?.split(/(\(.*?\))/); // 괄호로 묶인 부분을 찾음
-  // useImperativeHandle(ref, () => ({
-  //   setError(newError) {
-  //     setInternalError(newError);
-  //   },
-  //   focus() {
-  //     inputRef.current.focus();
-  //   },
-  // }));
+
   return (
     <React.Fragment>
       {parts.map((part, idx) =>
         // 괄호 안의 내용일 경우 DirectInput으로 대체
         /\(.*?\)/.test(part) ? (
-          <BaseInput ref={ref} key={`part_${idx}`} type="text" placeholder={t('version2_4.text111')} value={maskingValue} onChange={onChange} error={error} isError={false} maxLength={5} />
+          <BaseInput 
+            ref={ref} 
+            key={`part_${idx}`} 
+            type="text" 
+            placeholder={t('version2_4.text111')} 
+            value={maskingValue} 
+            onChange={onChange} 
+            error={error} 
+            isError={false} 
+            maxLength={5} 
+            disabled={disabled}
+          />
         ) : (
           <>{idx === 0 ? '(' : ')'}</>
         )
@@ -65,12 +69,42 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
     params,
   });
 
+  // Create conditional click handlers that only work when not in viewMode
+  const conditionalUpperClick = (ucode) => {
+    if (!viewMode) handleUpperClick(ucode);
+  };
+
+  const conditionalMiddleClick = (e, mcode) => {
+    if (!viewMode) handleMiddleClick(e, mcode);
+  };
+
+  const conditionalLowerClick = (e, lcode) => {
+    if (!viewMode) handleLowerClick(e, lcode);
+  };
+
+  const conditionalChecked = (e, ccode) => {
+    if (!viewMode) handleChecked(e, ccode);
+  };
+
+  const conditionalChange = (type, value) => {
+    if (!viewMode) handleChange(type, value);
+  };
+
+  const conditionalDirectInputChange = (e, idx, parts, type) => {
+    if (!viewMode) handleDirectInputChange(e, idx, parts, type);
+  };
+
   return (
     <>
       <div className="prostheticsType">
         {upperCode.map((ucode, idx) => (
           <div key={`${ucode.teethTypeNo}_${idx}`} className={`${selectedCode.upperCode.value === ucode.teethTypeNo ? 'listItem on' : 'listItem'}`}>
-            <strong onClick={() => handleUpperClick(ucode)}>{ucode.typeName}</strong>
+            <strong 
+              onClick={() => conditionalUpperClick(ucode)}
+              style={viewMode ? { cursor: 'default' } : {}}
+            >
+              {ucode.typeName}
+            </strong>
 
             <div className="itemData">
               <div>
@@ -79,7 +113,8 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                     <li
                       key={`${mcode.teethTypeNo}_${idx}`}
                       className={`${mcode.childCnt === 0 ? 'noDeph' : ''} ${selectedCode.middleCode.value === mcode.teethTypeNo ? 'on' : ''}`}
-                      onClick={(e) => handleMiddleClick(e, mcode)}
+                      onClick={(e) => conditionalMiddleClick(e, mcode)}
+                      style={viewMode ? { cursor: 'default' } : {}}
                     >
                       <span>{mcode.typeName}</span>
                     </li>
@@ -91,7 +126,8 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                     <li
                       key={`${lcode.teethTypeNo}_${idx}`}
                       className={`${lcode.childCnt === 0 ? 'noDeph' : ''} ${selectedCode.lowerCode.value === lcode.teethTypeNo ? 'on' : ''}`}
-                      onClick={(e) => handleLowerClick(e, lcode)}
+                      onClick={(e) => conditionalLowerClick(e, lcode)}
+                      style={viewMode ? { cursor: 'default' } : {}}
                     >
                       <span>{lcode.typeName}</span>
                     </li>
@@ -101,50 +137,11 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                 <ol className={`${selectedCode.lowerCode.value === '' && lowerCode.length > 0 ? 'precCategory noDeph' : 'noDeph'}`} onClick={(e) => e.stopPropagation()}>
                   {selectedCode.lowerCode.value === '' && lowerCode.length > 0 && <li>{t('version2_2.text87')}</li>}
                   {checkCode.map((ccode, idxx) => {
-                    // console.log(ccode)
                     return (
-                      // <>
-                      //   {
-                      //     selectedCode.lowerCode.value === 91 ?
-                      //       <li
-                      //         key={`${ccode.teethTypeNo}_${idx}`}
-                      //         className={`${selectedCode.code.value.includes(ccode.teethTypeNo) ? 'on' : ''}`}
-                      //         onClick={(e) => handleChecked(e, ccode)}
-                      //       >
-                      //         <span >
-                      //           {ccode.typeName}
-                      //         </span>
-                      //       </li>
-                      //       :
-                      //       <li
-                      //         key={`${ccode.teethTypeNo}_${idx}`}
-                      //         onClickCapture={(e) => {
-                      //           // e.preventDefault();
-                      //           // e.stopPropagation();
-                      //           // handleChecked(e, ccode);
-                      //         }}
-                      //       >
-                      //         <span className="checkSet">
-                      //           <BaseInput
-                      //             type="checkbox"
-                      //             id={`checkbox_${ccode.teethTypeNo}`}
-                      //             name={`checkbox_${ccode.teethTypeNo}`}
-                      //             value={ccode.teethTypeNo}
-                      //             label={ccode.typeName}
-                      //             checked={selectedCode.code.value.includes(ccode.teethTypeNo)}
-                      //             onClick={(e) => handleChecked(e, ccode)}
-                      //           // onChange={handleChecked}
-                      //           />
-                      //         </span>
-                      //       </li>
-                      //   }
-                      // </>
                       <li
                         key={`${ccode.teethTypeNo}_${idx}`}
                         onClickCapture={(e) => {
-                          // e.preventDefault();
-                          // e.stopPropagation();
-                          // handleChecked(e, ccode);
+                          // Empty handler kept for compatibility
                         }}
                       >
                         <span className="checkSet">
@@ -153,16 +150,12 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                             id={`checkbox_${ccode.teethTypeNo}`}
                             name={`checkbox_${ccode.teethTypeNo}`}
                             value={ccode.teethTypeNo}
-                            // label={(ccode.typeEditYn === 'Y' && selectedCode.code.value.includes(ccode.teethTypeNo)) ?
-                            //   <BaseInput type={`text`} placeholder={ccode.typeName} value={selectedCode.code.name[0]} onChange={(e) => handleChange('code', e.target.value)} />
-                            //   : ccode.typeName}
                             label={ccode.typeName}
                             checked={selectedCode.code.value.includes(ccode.teethTypeNo)}
-                            onClick={(e) => handleChecked(e, ccode)}
-                            // onChange={handleChecked}
+                            onClick={(e) => conditionalChecked(e, ccode)}
+                            disabled={viewMode}
                           />
                         </span>
-                        {}
                       </li>
                     );
                   })}
@@ -180,9 +173,10 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                         error={selectedCode.middleCode?.error}
                         placeholder={selectedCode.middleCode?.placeholder}
                         value={selectedCode.middleCode.name}
-                        onChange={(e) => handleChange('middleCode', e.target.value)}
+                        onChange={(e) => conditionalChange('middleCode', e.target.value)}
                         maxLength={8}
                         isError={false}
+                        disabled={viewMode}
                       />
                     </>
                   )}
@@ -202,7 +196,8 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                                 error={lowerDirectInputError}
                                 maskingValue={selectedCode.lowerCode.direct || ''}
                                 value={part}
-                                onChange={(e) => handleDirectInputChange(e, idx, parts[0], 'lowerCode')}
+                                onChange={(e) => conditionalDirectInputChange(e, idx, parts[0], 'lowerCode')}
+                                disabled={viewMode}
                               />
                             ) : (
                               <>{part}</>
@@ -215,9 +210,10 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                               error={selectedCode.lowerCode?.error}
                               placeholder={selectedCode.lowerCode?.placeholder}
                               value={selectedCode.lowerCode.name}
-                              onChange={(e) => handleChange('lowerCode', e.target.value)}
+                              onChange={(e) => conditionalChange('lowerCode', e.target.value)}
                               maxLength={8}
                               isError={false}
+                              disabled={viewMode}
                             />
                           );
                         }
@@ -241,7 +237,8 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                                   maskingValue={selectedCode.code?.direct || ''}
                                   value={part}
                                   error={codeDirectInputError}
-                                  onChange={(e) => handleDirectInputChange(e, idx, parts[0])}
+                                  onChange={(e) => conditionalDirectInputChange(e, idx, parts[0])}
+                                  disabled={viewMode}
                                 />
                               ) : (
                                 <>{part}</>
@@ -253,7 +250,7 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
                     </>
                   )}
                 </span>
-                {!viewMode &&  <BaseButton label={`${t('version2_2.text88')} (${currCnt}/${maxCnt})`} className="btnB ss" onClick={handleAdd} />}
+                {!viewMode && <BaseButton label={`${t('version2_2.text88')} (${currCnt}/${maxCnt})`} className="btnB ss" onClick={handleAdd} />}
               </p>
             </div>
           </div>
@@ -265,42 +262,42 @@ const ProstheticsType = ({ activeIndex, params, code, onClick, maxCnt = 0, currC
           titleName={'typeName'}
           valueName={'teethTypeNo'}
           placeholder={t('version2_4.text112')}
-          disabled={upperCode?.length <= 0}
+          disabled={upperCode?.length <= 0 || viewMode}
           init={init}
-          onChange={(e) => handleUpperClick(e)}
+          onChange={(e) => !viewMode && handleUpperClick(e)}
         />
         <BaseSelect
           items={middleCode}
           titleName={'typeName'}
           valueName={'teethTypeNo'}
           placeholder={t('version2_4.text113')}
-          disabled={middleCode?.length <= 0}
+          disabled={middleCode?.length <= 0 || viewMode}
           init={init}
-          onChange={(e) => handleMiddleClick(undefined, e)}
+          onChange={(e) => !viewMode && handleMiddleClick(undefined, e)}
           input={true}
           inputValue={selectedCode.middleCode.name}
-          valueChange={(e) => handleChange('middleCode', e.target.value)}
+          valueChange={(e) => !viewMode && handleChange('middleCode', e.target.value)}
         />
         <BaseSelect
           items={lowerCode}
           titleName={'typeName'}
           valueName={'teethTypeNo'}
           placeholder={t('version2_4.text114')}
-          disabled={lowerCode?.length <= 0}
+          disabled={lowerCode?.length <= 0 || viewMode}
           init={init}
-          onChange={(e) => handleLowerClick(undefined, e)}
+          onChange={(e) => !viewMode && handleLowerClick(undefined, e)}
           input={true}
           inputValue={selectedCode.lowerCode.name}
-          valueChange={(e) => handleChange('lowerCode', e.target.value)}
+          valueChange={(e) => !viewMode && handleChange('lowerCode', e.target.value)}
         />
         <BaseSelect
           items={checkCode}
           titleName={'typeName'}
           valueName={'teethTypeNo'}
           placeholder={t('version2_4.text115')}
-          disabled={checkCode?.length <= 0}
+          disabled={checkCode?.length <= 0 || viewMode}
           init={init}
-          onChange={(e) => handleChecked(undefined, e)}
+          onChange={(e) => !viewMode && handleChecked(undefined, e)}
         />
       </div>
     </>

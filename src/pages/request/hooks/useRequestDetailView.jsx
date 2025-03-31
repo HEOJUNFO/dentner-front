@@ -3,8 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { useNav, useSnack } from '@components/hooks';
 import ModalStore from '@store/ModalStore';
 import { getTeethType, getCommonCode } from '@api/Common';
-import {postRequestDetail, postRequestOften, getRequestJson, putRequestDetail, getRequestJsonView} from '@api/Request';
-import {initReactI18next, useTranslation} from 'react-i18next';
+import {postRequestDetail, postRequestOften,  putRequestDetail, getRequestJsonView} from '@api/Request';
+import { useTranslation} from 'react-i18next';
 import useWindowSize from '../../../components/hooks/useWindowSize';
 
 export const useRequestDetailView = () => {
@@ -41,11 +41,6 @@ export const useRequestDetailView = () => {
     { className: 'radioSet d5', value: 'E', id: 'conical', label: 'Conical pontic' },
     { className: 'radioSet d6', value: 'F', id: 'spheroidal', label: 'Spheroidal pontic' },
   ];
-
-  // const valueSe = [
-  //   { title: '직접입력', id: 'direct', value: 'A' },
-  //   { title: '디자이너 수치값 사용', id: 'designer', value: 'B' },
-  // ];
 
   const [valueSe, setValueSe] = useState([]);
 
@@ -144,6 +139,47 @@ export const useRequestDetailView = () => {
   const [activeIndex, setActiveIndex] = useState(0); // 탭 index
   const [files, setFiles] = useState([]);
   const [delFiles, setDelFiles] = useState([]); // 삭제된 파일
+
+  // 파일 중복 제거 함수 추가
+  const addUniqueFiles = (newFiles) => {
+    if (!newFiles || newFiles.length === 0) return [];
+    
+    const uniqueFiles = [];
+    const fileNameMap = {};
+    
+    // 기존 파일의 이름을 맵에 추가
+    files.forEach(file => {
+      const name = file.fileName;
+      if (!fileNameMap[name]) {
+        fileNameMap[name] = true;
+        uniqueFiles.push(file);
+      }
+    });
+    
+    // 새 파일 중 기존에 없는 파일만 추가
+    newFiles.forEach(file => {
+      const name = file.fileName || file.name;
+      if (!fileNameMap[name]) {
+        fileNameMap[name] = true;
+        uniqueFiles.push(file);
+      }
+    });
+    
+    return uniqueFiles;
+  };
+  
+  // 파일 업로드 핸들러 추가
+  const handleFileUpload = (event) => {
+    const newFiles = Array.from(event.target.files).map(file => ({
+      file,
+      fileName: file.name,
+      fileSize: file.size,
+      type: 'local'
+    }));
+    
+    // 중복 제거 후 파일 설정
+    setFiles(addUniqueFiles([...files, ...newFiles]));
+  };
 
   const [agree, setAgree] = useState({
     isConfirm: { value: false, type: 'boolean', isRequired: true, error: '', check: 1, success: 0, checkMessage: '필수항목 동의 후 저장이 가능합니다.' },
@@ -381,7 +417,6 @@ export const useRequestDetailView = () => {
         const updatedTypeList = { ...updatedValue[activeIndex].typeList, value: [updatedTypeCount] };
 
         updatedValue[activeIndex] = { ...updatedValue[activeIndex], typeList: updatedTypeList };
-        // console.log('updatedValue', ucnt + lcnt);
       }
 
       return [...updatedValue];
@@ -586,22 +621,6 @@ export const useRequestDetailView = () => {
     });
   };
 
-  //보철종류개수변경
-  // const handleTypeCountChange = (idx, newValue) => {
-  //   setParams((prevParams) => {
-  //     const updatedTypeListValue = [...prevParams.typeList.value];
-  //     updatedTypeListValue[idx] = newValue;
-
-  //     return {
-  //       ...prevParams,
-  //       typeList: {
-  //         ...prevParams.typeList,
-  //         value: updatedTypeListValue,
-  //       },
-  //     };
-  //   });
-  // };
-
   //보철종류삭제
   const handleRemoveType = (idx) => {
     console.log(activeIndex , idx)
@@ -618,21 +637,6 @@ export const useRequestDetailView = () => {
       return [...updatedValue];
     });
   };
-
-  // const handleRemoveTypeDetail = (idx,idx2) => {
-  //   setParams((prevParams) => {
-  //     const updatedValue = [...prevParams];
-  //     const updatedTypeListValue = [...updatedValue[activeIndex].typeList.value];
-  //     updatedTypeListValue.splice(idx, 1);
-  //
-  //     updatedValue[activeIndex] = {
-  //       ...prevParams[activeIndex],
-  //       typeList: { ...updatedValue[activeIndex].typeList, value: updatedTypeListValue, success: 1, error: '' },
-  //       ...toothsValue, //보철종류 삭제시 선택 치아 초기화
-  //     };
-  //     return [...updatedValue];
-  //   });
-  // };
 
   //가공방법
   const handleChangeMillingType = (e) => {
@@ -687,11 +691,6 @@ export const useRequestDetailView = () => {
   };
 
   useEffect(() => {
-    // fetchCommonCode('766');
-    // fetchTeethTypeCode();
-    // if (state?.requestDocGroupNo) {
-    //   fetchData(state?.requestDocGroupNo);
-    // }
     const init = async () => {
       try {
         const [commonCodeResult, teethTypeCodeResult] = await Promise.all([fetchCommonCode('766'), fetchTeethTypeCode()]);
@@ -701,7 +700,6 @@ export const useRequestDetailView = () => {
         }
 
         if (state?.requestDc) {
-          //handleChange('requestDc', state?.requestDc);
 
           setParams((prevParams) => {
             const updatedValue = [...state?.params];
@@ -731,13 +729,6 @@ export const useRequestDetailView = () => {
             };
             return [...updatedValue];
           });
-          // handleChange('valueSe', 'A');
-          // handleChange('valueSj', state?.valueSj);
-          // handleChange('cementGapValue', state?.cementGapValue);
-          // handleChange('extraGapValue', state?.extraGapValue);
-          // handleChange('occlusalDistanceValue', state?.occlusalDistanceValue);
-          // handleChange('approximalDistanceValue', state?.approximalDistanceValue);
-          // handleChange('heightMinimalValue', state?.heightMinimalValue);
           handleToggle();
         }
       } catch (error) {
@@ -748,7 +739,7 @@ export const useRequestDetailView = () => {
     init();
   }, [state, i18n.language]);
 
-  // 상세 데이터 조회
+  // 상세 데이터 조회 (파일 중복 제거 로직으로 수정)
   const fetchData = async (requestDocGroupNo, requestFormNo) => {
     const r = await getRequestJsonView(requestDocGroupNo, requestFormNo);
     const dt = r.data;
@@ -768,7 +759,8 @@ export const useRequestDetailView = () => {
         };
       });
 
-    const files = dt?.fileList?.map((el) => {
+    // 서버에서 가져온 파일 처리
+    const serverFiles = dt?.fileList?.map((el) => {
       return {
         fileName: el.fileRealName,
         fileSize: el.fileSize,
@@ -777,7 +769,9 @@ export const useRequestDetailView = () => {
         fileUrl: el.fileUrl,
       };
     });
-    setFiles(files);
+    
+    // 중복 제거 로직을 적용하여 파일 설정
+    setFiles(addUniqueFiles(serverFiles || []));
 
     setApiResponse(dt);
     setParams(j);
@@ -815,7 +809,6 @@ export const useRequestDetailView = () => {
       requestDocNo,
       requestUuidKey: item.uuidKey,
       requestProcessNo: item.requestProcessNo.value, //가공방법
-      // requestProcessEtcName: '', //가공방법기타
       requestProcessEtcName: item.requestProcessEtcName.value, //가공방법기타
       requestDc: item.requestDc.value, //상세설명
       requestPonticSe: item.requestPonticSe.value, //Pontic 디자인 값 A B C D E F
@@ -986,7 +979,10 @@ export const useRequestDetailView = () => {
     const docList = params.map((p) => convertData(p));
 
     formData.append('requestNumber', p[0].requestNumber.value);
-    files.forEach((f) => {
+    
+    // 파일 중복 제거 후 추가
+    const uniqueFiles = addUniqueFiles(files);
+    uniqueFiles.forEach((f) => {
       formData.append('files', f.file);
     });
 
@@ -1059,5 +1055,7 @@ export const useRequestDetailView = () => {
     handleSubmitDraft,
     toothsRef,
     fetchData,
+    handleFileUpload,   // 새로 추가된 파일 업로드 핸들러
+    addUniqueFiles,     // 파일 중복 제거 함수 
   };
 };
