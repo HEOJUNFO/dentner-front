@@ -18,17 +18,6 @@ const usePaymentPage = () => {
     { title: t('request.target'), desc: '지정요청', value: 'B' },
   ];
 
-  // const stss = [
-  //   { name: t('status.all'), value: '' },
-  //   { name: t('status.quote_ing'), value: 'A' },
-  //   { name: t('status.select_dental_designer'), value: 'B' },
-  //   { name: t('status.trade'), value: 'C' },
-  //   { name: t('status.complete'), value: 'D' },
-  //   { name: t('status.cancel'), value: 'E' },
-  //   { name: t('status.cancel_wait'), value: 'F' },
-  //   { name: t('status.request_closed'), value: 'G' },
-  // ];
-
   const [stss, setStss] = useState([]);
 
   const [isLoading, setLoading] = useState(true);
@@ -193,7 +182,6 @@ const usePaymentPage = () => {
   };
 
   const convertItem = (item) => {
-    console.log(item);
     //진행 상태 (A:견적 요청중, B:치자이너 선택중, C:거래중, D:거래완료, E:거래취소, F:거래취소 승인 대기중, G:요청마감, H:요청수락(치자이너), I: 치자이너 수락대기)
     return {
       requestFormNo: item.requestFormNo,
@@ -242,9 +230,6 @@ const usePaymentPage = () => {
       onCancelReq: () => handleCancelReq(item), //거래취소요청
       onFetch: () => fetchTransactions(),
       memberOutAt: item.memberOutAt
-      // onModalOpen: (e) => {
-      //   fetchProsthetics(item.requestFormNo);
-      // },
     };
   };
 
@@ -252,14 +237,14 @@ const usePaymentPage = () => {
   const fetchTransactions = async () => {
     try {
       const r = await getTransactions({ requestFormSe: tab, params });
-      // console.log(r);
+    
       const { data, statusCode } = r;
       if (statusCode == 200) {
         const { cnt, list } = data;
         setItems(list.map((item) => convertItem(item)));
         setTotal(cnt);
       }
-      // console.log(r);
+
     } catch (e) {
       console.log(e);
     } finally {
