@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { BaseInput, BaseSelect,  ModalPresent, BaseTextArea } from '@components/common';
+import { BaseInput, BaseSelect, ModalPresent, BaseTextArea } from '@components/common';
 import { RadioFilter} from '@components/ui';
 
 import InquireTipModal from '../../components/ui/modal/InquireTipModal';
@@ -15,7 +15,7 @@ import {getByteSize} from "../../utils/common.js";
 import useFileDownload from "../../components/hooks/useFileDownload.jsx";
 
 /**
- * 의뢰서 간편모드 작성
+ * 의뢰서 간편모드 작성 (뷰어 모드)
  * @returns
  */
 const RequestEasyForm = () => {
@@ -46,6 +46,7 @@ const RequestEasyForm = () => {
 
   const { handleFileDownload, handleFileZipDownload, handleFileDownloadEncrypt, handleFileZipDownloadEncrypt } = useFileDownload();
 
+  // 뷰어 모드에서는 모달이 필요 없으므로 상태만 유지하고 사용하지 않음
   const [isModal, setIsModal] = useState(false);
   const [isModal2, setIsModal2] = useState(false);
   const [isModal3, setIsModal3] = useState(false);
@@ -71,33 +72,25 @@ const RequestEasyForm = () => {
                 </dt>
                 <dd>
                   <BaseInput
-                      readOnly
+                    readOnly
                     type="text"
                     id="requestNumber"
                     placeholder={params?.requestNumber?.placeholder}
                     value={params?.requestNumber?.value}
                     error={params?.requestNumber?.error}
                     maxLength={params?.requestNumber?.maxLength}
-                    onChange={(e) => {
-                      const regex = /^[^a-zA-Z가-힣ㄱ-ㅎㅏ-ㅣ]+$/;
-                      handleChange(e.target.id, e.target.value);
-                      if (!regex.test(e.target.value)) {
-                        const newValue = e.target.value.slice(0, -1);
-                        handleChange(e.target.id, newValue);
-                      }
-                    }}
                   />
                 </dd>
               </dl>
-              <dl>
+              {/* <dl>
                 <dt>
                   {t('base.prosthesistype')} <sup>필수항목</sup>
                 </dt>
                 <dd>
-                  <ProstheticsType code={teethTypeCode} onClick={handleAddTeethType} maxCnt={10} currCnt={params?.typeList?.value.length} viewMode={true}/>
+                  <ProstheticsType code={teethTypeCode} maxCnt={10} currCnt={params?.typeList?.value.length} viewMode={true}/>
                   {params?.typeList?.error && <p className="errorP">{params?.typeList?.error}</p>}
                 </dd>
-              </dl>
+              </dl> */}
               <dl>
                 <dt>
                   {t('version2_2.text47')} <sup>필수항목</sup>
@@ -111,8 +104,9 @@ const RequestEasyForm = () => {
                           key={`${el.valueName}_${idx}`}
                           element={el}
                           placeholder={''}
-                          onChange={(e) => handleTypeCountChange(idx, { ...el, typeCount: isNaN(e.target.value) ? '' : e.target.value, error: '' })}
-                          onDeleteClick={(e) => handleRemoveType(idx)}
+                          // 상호작용 이벤트 제거
+                          readOnly={true}
+                          disableRemove={true}
                         />
                       );
                     })}
@@ -139,8 +133,8 @@ const RequestEasyForm = () => {
                         selectedValue={params?.requestProcessNo?.value}
                         input={true}
                         inputValue={params?.requestProcessEtcName.value}
-                        valueChange={(e) => handleChange('requestProcessEtcName', e.target.value)}
-                        onChange={handleChangeMillingType}
+                        disabled={true}
+                        readOnly={true}
                       />
                     </div>
                   </dd>
@@ -156,6 +150,8 @@ const RequestEasyForm = () => {
                   valueName={'codeNo'}
                   checkValue={params?.requestProcessNo?.value}
                   etcValue={params?.requestProcessEtcName.value}
+                  disabled={true}
+                  readOnly={true}
                 />
               )}
               <dl>
@@ -168,15 +164,13 @@ const RequestEasyForm = () => {
                     className="detailTxt"
                   >
                     <BaseTextArea
-                        readOnly
+                      readOnly
                       id="requestDc"
                       error={params?.requestDc.error}
                       value={params?.requestDc.value}
                       placeholder={params?.requestDc.placeholder}
                       maxLength={params?.requestDc.maxLength}
-                      onChange={(e) => handleChange(e.target.id, e.target.value)}
                     />
-                  
                   </div>
                 </dd>
               </dl>
@@ -199,6 +193,7 @@ const RequestEasyForm = () => {
                               {el.fileName}
                               <em>{getByteSize(el.fileSize)}</em>
                             </span>
+                            {/* 파일 다운로드 기능은 뷰어모드에서도 필요하므로 유지 */}
                             <button className="bFD" onClick={(e) => handleFileDownloadEncrypt(e, el.fileNo, el.fileName)}>
                               Download
                             </button>
@@ -206,50 +201,13 @@ const RequestEasyForm = () => {
                         </li>
                     );
                   })}
-                 
                 </dd>
               </dl>
-            
             </div>
-
           </div>
         </div>
       </section>
-      {isModal && (
-        <ModalPresent>
-          <InquireTipModal
-            onClose={() => {
-              setIsModal(false);
-            }}
-          />
-        </ModalPresent>
-      )}
-      {isModal2 && (
-        <ModalPresent>
-          <TemporaryModal
-            type={'A'}
-            onLoad={(requestDocGroupNo) => {
-              fetchData(requestDocGroupNo);
-            }}
-            onClose={() => {
-              setIsModal2(false);
-            }}
-          />
-        </ModalPresent>
-      )}
-      {isModal3 && (
-        <ModalPresent>
-          <OftenDTModal
-            type={'A'}
-            onClose={() => {
-              setIsModal3(false);
-            }}
-            onLoad={(often) => {
-              handleChange('requestDc', often);
-            }}
-          />
-        </ModalPresent>
-      )}
+      {/* 뷰어 모드에서는 모달이 필요 없으므로 제거 */}
     </>
   );
 };
