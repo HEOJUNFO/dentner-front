@@ -15,6 +15,7 @@ bower_components
 .env.development
 .env.production
 .env.staging
+.env.local
 *.sublime*
 
 psd
@@ -22,4 +23,4 @@ thumb
 sketch
 
 dist
-
+dev-dist

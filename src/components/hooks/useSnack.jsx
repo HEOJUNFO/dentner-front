@@ -1,48 +1,100 @@
-import { useSnackbar } from 'react-simple-snackbar';
-
-const options = {
-  position: 'bottom-right',
-  style: {
-    zIndex: 9999,
-    backgroundColor: 'midnightblue',
-    border: '2px solid lightgreen',
-    color: 'lightblue',
-    fontFamily: 'Menlo, monospace',
-    fontSize: '20px',
-    textAlign: 'center',
-  },
-  closeStyle: {
-    color: 'lightcoral',
-    fontSize: '16px',
-  },
-};
-
-const warningSnackbarOptions = {
-  position: 'bottom-center',
-  style: {
-    backgroundColor: '#F74271',
-    color: 'white',
-    //fontFamily: 'Menlo, monospace',
-    //fontSize: '20px',
-    textAlign: 'center',
-    //marginBottom: '60px', // Adjust this value to move the snackbar slightly above the bottom of the screen
-  },
-  closeStyle: {
-    color: 'white',
-    fontSize: '16px',
-  },
-};
+import { toast } from 'react-hot-toast';
 
 const useSnack = () => {
-  const [openSnackbar, closeSnackbar] = useSnackbar();
-  const [openWarnSnackbar, closeWarnSnackbar] = useSnackbar(warningSnackbarOptions);
-
   const showSnackbar = (message) => {
-    openSnackbar(message);
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        }`}
+        style={{
+          zIndex: 9999,
+          width: '20%',
+          maxWidth: '672px',
+          backgroundColor: '#5C7CFA', // Blue color like in image
+          color: 'white',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '16px'
+        }}
+      >
+        <span style={{ 
+          fontWeight: '500', 
+          fontSize: '16px',
+           color: 'white'
+        }}>
+          {message}
+        </span>
+        <button 
+          onClick={() => toast.dismiss(t.id)} 
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'white',
+            fontSize: '20px',
+            cursor: 'pointer',
+            marginLeft: '20px'
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    ), {
+      position: 'bottom-center',
+      duration: 3000,
+    });
   };
 
   const showWarnSnackbar = (message) => {
-    openWarnSnackbar(message);
+    toast.custom((t) => (
+      <div
+        className={`${
+          t.visible ? 'animate-enter' : 'animate-leave'
+        }`}
+        style={{
+          zIndex: 9999,
+          width: '20%',
+          maxWidth: '672px',
+          backgroundColor: '#F74271',
+          color: 'white',
+          padding: '16px 24px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginTop: '16px'
+        }}
+      >
+        <span style={{ 
+          fontWeight: '500', 
+          fontSize: '16px',
+          color: 'white'
+        }}>
+          {message}
+        </span>
+        <button 
+          onClick={() => toast.dismiss(t.id)} 
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'white',
+            fontSize: '20px',
+            cursor: 'pointer',
+            marginLeft: '20px'
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    ), {
+      position: 'bottom-center',
+      duration: 3000,
+    });
   };
 
   return { showSnackbar, showWarnSnackbar };

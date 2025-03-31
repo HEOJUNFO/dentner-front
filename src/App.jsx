@@ -1,6 +1,6 @@
 import {Suspense, useEffect, useState} from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import SnackbarProvider from 'react-simple-snackbar';
+import { Toaster } from 'react-hot-toast'; // Replace SnackbarProvider
 import '@utils/i18n';
 import { useTranslation, I18nextProvider } from 'react-i18next';
 //import './App.css'
@@ -85,58 +85,66 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <I18nextProvider i18n={i18n}>
-        <SnackbarProvider>
-          <Suspense fallback={<SuspenseLoading />}>
-            <Router>
-              <ScrollRestoration />
-              <ScrollToTop>
-                <Routes>
-                  {routes.map((route, idx) => {
-                    return (
-                      route.component && (
-                        <Route
-                          key={idx}
-                          path={route.path}
-                          element={
-                            <route.layout>
-                              {route.protected ? (
-                                <PrivateRoute>
-                                  <route.component />
-                                </PrivateRoute>
-                              ) : (
+      <Toaster 
+          toastOptions={{
+            duration: 3000,
+            position: 'bottom-center',
+            style: {
+              maxWidth: '672px',
+              width: '100%'
+            }
+          }}
+        />
+        <Suspense fallback={<SuspenseLoading />}>
+          <Router>
+            <ScrollRestoration />
+            <ScrollToTop>
+              <Routes>
+                {routes.map((route, idx) => {
+                  return (
+                    route.component && (
+                      <Route
+                        key={idx}
+                        path={route.path}
+                        element={
+                          <route.layout>
+                            {route.protected ? (
+                              <PrivateRoute>
                                 <route.component />
-                              )}
-                            </route.layout>
-                          }
-                        >
-                          {route.routes &&
-                            route.routes.map((routes, idxx) => {
-                              // return <Route key={idxx} path={routes.path} element={<routes.component />} />;
-                              return (
-                                <Route
-                                  key={idxx}
-                                  path={routes.path}
-                                  element={
-                                    routes.protected ? (
-                                      <PrivateRoute>
-                                        <routes.component />
-                                      </PrivateRoute>
-                                    ) : (
+                              </PrivateRoute>
+                            ) : (
+                              <route.component />
+                            )}
+                          </route.layout>
+                        }
+                      >
+                        {route.routes &&
+                          route.routes.map((routes, idxx) => {
+                            // return <Route key={idxx} path={routes.path} element={<routes.component />} />;
+                            return (
+                              <Route
+                                key={idxx}
+                                path={routes.path}
+                                element={
+                                  routes.protected ? (
+                                    <PrivateRoute>
                                       <routes.component />
-                                    )
-                                  }
-                                />
-                              );
-                            })}
-                        </Route>
-                      )
-                    );
-                  })}
-                </Routes>
-              </ScrollToTop>
-            </Router>
-          </Suspense>
-        </SnackbarProvider>
+                                    </PrivateRoute>
+                                  ) : (
+                                    <routes.component />
+                                  )
+                                }
+                              />
+                            );
+                          })}
+                      </Route>
+                    )
+                  );
+                })}
+              </Routes>
+            </ScrollToTop>
+          </Router>
+        </Suspense>
       </I18nextProvider>
     </GoogleOAuthProvider>
   );
