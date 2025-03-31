@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getRequestFormBasket, deleteRequestFormBasket } from '@api/Basket';
+import { getRequestJson } from '@api/Request'; // 추가: RequestJson API 가져오기
 import { useNav, useSnack } from '@components/hooks';
 import { useTranslation } from 'react-i18next';
 
@@ -27,6 +28,25 @@ const useRequestBasket = () => {
   ];
   const [checkAll, setCheckAll] = useState(false);
 
+  // typeCount 데이터를 가져오는 함수
+  const fetchTypeCountData = async (requestDocGroupNo) => {
+    try {
+      const response = await getRequestJson(requestDocGroupNo);
+      if (response?.data?.requestJsonDc) {
+        const jsonData = JSON.parse(response.data.requestJsonDc);
+        
+        // typeCount 데이터 추출
+        if (jsonData[0]?.typeList?.value?.length > 0) {
+          return jsonData[0].typeList.value[0].typeCount;
+        }
+      }
+      return null;
+    } catch (e) {
+      console.error('typeCount 데이터 가져오기 실패:', e);
+      return null;
+    }
+  };
+
   const fetchRequestBasket = async () => {
     setCheckAll(false);
     setCheckedItems([]);
@@ -35,7 +55,53 @@ const useRequestBasket = () => {
     const { data, statusCode } = r;
     if (statusCode == 200) {
       const { cnt, list } = data;
-      setItems(list);
+      
+      // 각 항목에 대해 typeCount 데이터 가져오기
+      const updatedList = await Promise.all(
+        list.map(async (item) => {
+          const typeCount = await fetchTypeCountData(item.requestDocGroupNo);
+          
+          // 의뢰서별 typeCount 값이 있으면 추가
+          if (typeCount !== null) {
+            // requestDocDesc 값 수정 - 형식을 "Crown {typeCount}"로 변경
+            let updatedRequestDocDesc = "";
+            
+            if (item.requestDocDesc) {
+              // "Crown 2" -> "Crown {typeCount}"
+              const parts = item.requestDocDesc.split(" ");
+              if (parts.length > 0) {
+                // 마지막 숫자 부분을 제외한 부분 + typeCount
+                updatedRequestDocDesc = parts.slice(0, -1).join(" ") + " " + typeCount;
+              } else {
+                updatedRequestDocDesc = item.requestDocDesc + " " + typeCount;
+              }
+            }
+            
+            // prostheticsList가 있으면 첫 번째 항목의 count를 typeCount로 업데이트
+            if (item.prostheticsList && item.prostheticsList.length > 0) {
+              return {
+                ...item,
+                requestDocDesc: updatedRequestDocDesc,
+                prostheticsList: item.prostheticsList.map((prosthetic, index) => 
+                  index === 0 
+                    ? { ...prosthetic, count: typeCount } 
+                    : prosthetic
+                )
+              };
+            } else {
+              // prostheticsList가 없으면 typeCount 속성 추가
+              return {
+                ...item,
+                requestDocDesc: updatedRequestDocDesc,
+                typeCount: typeCount
+              };
+            }
+          }
+          return item;
+        })
+      );
+      
+      setItems(updatedList);
       setTotal(cnt);
     }
   };
@@ -92,7 +158,22 @@ const useRequestBasket = () => {
     fetchRequestBasket();
   }, [tab, params]);
 
-  return { handleNav, tab, setTab, tabItem, items, checkAll, handleCheckAll, handleCheck, checkedItems, handleRemove, total, perPage, currentPage, setCurrentPage };
+  return { 
+    handleNav, 
+    tab, 
+    setTab, 
+    tabItem, 
+    items, 
+    checkAll, 
+    handleCheckAll, 
+    handleCheck, 
+    checkedItems, 
+    handleRemove, 
+    total, 
+    perPage, 
+    currentPage, 
+    setCurrentPage 
+  };
 };
 
 export default useRequestBasket;

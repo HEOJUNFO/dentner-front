@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { ItemTag, BaseButton } from '@components/common';
@@ -15,7 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 const RequestMyInfoPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isLoading, error, data, user, cads, isMine, handleModify, handleRemove, pathValue } = useRequestMyInfoPage();
+  const { isLoading, error, data, user, cads, isMine, handleModify, handleRemove, pathValue, typeCountData } = useRequestMyInfoPage();
   const { handleFileDownload, handleFileZipDownload, handleFileDownloadEncrypt, handleFileZipDownloadEncrypt } = useFileDownload();
 
   if (isLoading) return <></>;
@@ -71,6 +71,9 @@ const RequestMyInfoPage = () => {
                 <div className="itemList">
                   {data.prostheticsList.map((el, idx) => {
                     const sdt = el.requestTypeName?.split(' > ') || [];
+                    // typeCountData가 있으면 해당 값 사용, 없으면 기존 el.count 사용
+                    const displayCount = typeCountData && typeCountData[idx] ? typeCountData[idx] : el.count;
+                    
                     return (
                       <div key={`RequestCategoryAndProsthesis_${idx}`}>
                         <strong>
@@ -85,7 +88,7 @@ const RequestMyInfoPage = () => {
                           })}
                         </strong>{' '}
                         <em>
-                          {el.count}
+                          {displayCount}
                           {t('base.count')}
                         </em>
                       </div>

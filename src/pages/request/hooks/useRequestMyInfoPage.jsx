@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNav, useSnack } from '@components/hooks';
-import { getRequestMyInfo, deleteRequestDoc } from '@api/Request';
+import { getRequestMyInfo, deleteRequestDoc, getRequestJson } from '@api/Request';
 import UserStore from '@store/UserStore';
 
 /**
@@ -17,6 +17,7 @@ export const useRequestMyInfoPage = () => {
   const [error, setError] = useState();
   const [data, setData] = useState();
   const [cads, setCads] = useState([]);
+  const [typeCountData, setTypeCountData] = useState(null);
 
   const [isMine, setIsMine] = useState(false);
 
@@ -40,8 +41,11 @@ export const useRequestMyInfoPage = () => {
           if (cad.length > 0) setCads(cad);
 
           setData(dt);
+          
+          // 상세 JSON 데이터 가져오기
+          fetchTypeCountData(pathValue?.id);
         }
-      }else {
+      } else {
         alert('잘못된 진입입니다.');
         handleNav(-1);
       }
@@ -49,6 +53,24 @@ export const useRequestMyInfoPage = () => {
       setError(e);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // typeCount 데이터 가져오기
+  const fetchTypeCountData = async (requestDocGroupNo) => {
+    try {
+      const response = await getRequestJson(requestDocGroupNo);
+      if (response?.data?.requestJsonDc) {
+        const jsonData = JSON.parse(response.data.requestJsonDc);
+        
+        // typeCount 데이터 추출
+        if (jsonData[0]?.typeList?.value?.length > 0) {
+          const typeCounts = jsonData[0].typeList.value.map(item => item.typeCount);
+          setTypeCountData(typeCounts);
+        }
+      }
+    } catch (e) {
+      console.error('typeCount 데이터 가져오기 실패:', e);
     }
   };
 
@@ -80,5 +102,5 @@ export const useRequestMyInfoPage = () => {
     if (pathValue?.id) fetchRequest();
   }, [pathValue]);
 
-  return { isLoading, error, data, user, cads, isMine, handleModify, handleRemove, pathValue };
+  return { isLoading, error, data, user, cads, isMine, handleModify, handleRemove, pathValue, typeCountData };
 };

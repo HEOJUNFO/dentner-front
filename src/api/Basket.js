@@ -12,6 +12,7 @@ export const getRequestFormBasket = async ({ pathValue, params }) => {
         ...params,
       },
     });
+    console.log(response)
     return response.data;
   } catch (error) {
     throw error;
