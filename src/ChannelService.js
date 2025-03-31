@@ -1,13 +1,17 @@
 class ChannelService {
   constructor() {
-    this.loadScript();
+    // 이미 초기화되었는지 확인
+    if (!window.ChannelIOScriptLoaded) {
+      window.ChannelIOScriptLoaded = true;
+      this.loadScript();
+    }
   }
 
   loadScript() {
     (function () {
       var w = window;
       if (w.ChannelIO) {
-        return w.console.error('ChannelIO script included twice.');
+        return; // 에러 메시지 대신 조용히 리턴
       }
       var ch = function () {
         ch.c(arguments);
@@ -125,4 +129,13 @@ class ChannelService {
   }
 }
 
-export default new ChannelService();
+// 싱글톤 인스턴스
+let instance = null;
+
+// 싱글톤 패턴 적용
+export default (() => {
+  if (!instance) {
+    instance = new ChannelService();
+  }
+  return instance;
+})();

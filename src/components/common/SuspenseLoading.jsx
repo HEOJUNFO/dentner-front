@@ -23,7 +23,7 @@ const SuspenseLoading = ({ loading }) => {
             fontWeight: '700',
           }}
         >
-          <h> 페이지 이동중 ... </h>
+          <h1> 페이지 이동중 ... </h1>
         </div>
       </div>
     </ModalPortal>

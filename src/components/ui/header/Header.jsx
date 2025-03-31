@@ -1,10 +1,6 @@
 import { React, useState, useRef, useEffect, useContext } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import sampleProfile from '@assets/images/sample/sample1.jpeg';
-// import Drawer from 'react-modern-drawer';
-// import MobileSnb from './MobileSnb';
 import { useHeader } from './hooks/useHeader';
 import 'react-modern-drawer/dist/index.css';
 import LoginAfter from './components/LoginAfter';
@@ -19,9 +15,7 @@ const Header = () => {
     setLang(lang);
     i18n.changeLanguage(lang);
     sessionStorage.setItem('lang', lang);
-    //console.log('changed lang' , lang)
 
-    //console.log(document.getElementsByTagName('body'))
     document.body.className = lang
     document.documentElement.lang = lang;
 
@@ -84,30 +78,31 @@ const Header = () => {
 
             {/* 로그인 후 */}
             {login && <LoginAfter user={user} mileage={mileage} designerMileage={designerMileage} />}
-            {/**/}
             <div className="langChoice">
               <span>
-                {/* 24.9.6 임시 주석처리 */}
-                <input type="radio" name="lang" id="langE" onClick={() => handleLanguage('en')} checked={lang === 'en'} />
-                {/* <input type="radio" name="lang" id="langE" onClick={(e) => e.preventDefault()} /> */}
-                <label htmlFor="langE">EN</label>
+              <input 
+  type="radio" 
+  name="lang" 
+  id="langE" 
+  onChange={() => handleLanguage('en')} 
+  checked={lang === 'en'} 
+/>
+<label htmlFor="langE">EN</label>
               </span>
               <span>
-                <input type="radio" name="lang" id="langk" onClick={() => handleLanguage('ko')} checked={lang === 'ko'} />
-                <label htmlFor="langk">KR</label>
+              <input 
+  type="radio" 
+  name="lang" 
+  id="langk" 
+  onChange={() => handleLanguage('ko')} 
+  checked={lang === 'ko'} 
+/>
+<label htmlFor="langk">KR</label>
               </span>
             </div>
           </div>
-          {/* <button className="mSnb" onClick={() => toggleDrawer()}>
-            Mobile Snb
-          </button> */}
         </header>
       </div>
-
-      {/* <Drawer open={isOpen} onClose={toggleDrawer} direction="right" size={window.innerWidth}> */}
-      {/* <Drawer open={isOpen} onClose={toggleDrawer} direction="right" size="300px">
-        <MobileSnb toggleDrawer={toggleDrawer} />
-      </Drawer> */}
     </>
   );
 };

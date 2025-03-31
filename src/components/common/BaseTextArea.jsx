@@ -1,18 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, {  useRef } from 'react';
 const BaseTextArea = ({ onChange, error, isError = true, ...props }) => {
   const textAreaRef = useRef(null);
-  const handleScroll = () => {
-    if (document.activeElement === textAreaRef.current) {
-      textAreaRef.current.blur(); // Remove focus when scrolling
-    }
-  };
 
-  // useEffect(() => {
-  //   window.addEventListener('scroll', handleScroll);
-  //   return () => {
-  //     window.removeEventListener('scroll', handleScroll);
-  //   };
-  // }, []);
 
   return (
     <>
