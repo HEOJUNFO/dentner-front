@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { BaseInput, BaseButton, ModalPresent, Pagenation } from '@components/common';
+import { BaseInput, BaseButton,  Pagenation } from '@components/common';
 import useRequestBasket from './hooks/useRequestBasket';
 import RequestBasketItem from './components/RequestBasketItem';
 import { useTranslation } from 'react-i18next';
@@ -64,8 +64,7 @@ const RequestBasket = () => {
                   {items.length > 0 && items.map((item, idx) => <RequestBasketItem key={`RequestBasketItem_${idx}`} item={item} onChange={handleCheck} checkedItems={checkedItems} tab={tab} />)}
                   {items.length == 0 && <li className="noList search">{t('base.empty_search_list')}</li>}
 
-                  {/* <li className='noList search'>검색 결과가 없습니다.</li>
-                        <li className='noList'>등록된 목록이 없습니다.</li> */}
+          
                 </ul>
               </div>
 

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { BaseInput, BaseButton, ModalPresent, Pagenation } from '@components/common';
+import { BaseInput } from '@components/common';
 import { useTranslation } from 'react-i18next';
 import useWindowSize from '../../../components/hooks/useWindowSize';
 const RequestBasketItem = ({ item, onChange, checkedItems = [], tab }) => {
@@ -8,8 +8,6 @@ const RequestBasketItem = ({ item, onChange, checkedItems = [], tab }) => {
   const isChecked = checkedItems.find((el) => el.requestDocGroupNo == requestDocGroupNo) || false;
   const { t } = useTranslation();
   const isMobile = useWindowSize();
-
-  console.log(item)
 
   return (
     <li>
@@ -32,9 +30,6 @@ const RequestBasketItem = ({ item, onChange, checkedItems = [], tab }) => {
             </span>
           </Link>
         </div>
-        {/* <div className='moreWrite'>
-            <button className='btnB' to=''>이어서 작성하기</button>
-        </div> 모바일 대응 : 개발필요 (임시저장 의뢰서 일 경우) */}
       </div>
     </li>
   );

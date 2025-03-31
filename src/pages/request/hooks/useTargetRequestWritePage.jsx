@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { isBefore, format } from 'date-fns';
+import { useEffect,  useState } from 'react';
+import { format } from 'date-fns';
 import { useNav, useSnack } from '@components/hooks';
 import { getRequestTargetPrice, postRequestTargetForm } from '@api/Request';
 import UserStore from '@store/UserStore';
@@ -40,8 +40,6 @@ export const useTargetRequestWritePage = () => {
     requestDocGroupsNo: { value: [], type: 'array', isRequired: true, error: '', check: 1, success: 0, maxLength: 10, placeholder: '의뢰서를 추가하세요.' },
     requestFormSj: { value: '', type: 'string', isRequired: true, error: '', check: 0, success: 0, maxLength: 60, placeholder: '요청하는 보철물 종류와 개수를 작성하세요 (공백 미포함 30자)' },
     requestFormType: { value: [], type: 'array', isRequired: true, error: '', check: 0, success: 0, maxLength: 10, placeholder: '보철종류를 선택하세요.' },
-    //requestExpireDate: { value: new Date(), type: 'date', isRequired: true, error: '', check: 0, success: 0, maxLength: 10, placeholder: '견적요청 만료날짜를 선택하세요.' },
-    //requestExpireTime: { value: '00:00', isRequired: true, error: '', check: 0, success: 0, maxLength: 10, placeholder: '견적요청 만료날짜를 선택하세요.' },
     requestDeadlineDate: { value: new Date(), type: 'date', isRequired: true, error: '', check: 0, success: 0, maxLength: 10, placeholder: '견적요청 만료날짜를 선택하세요.' },
     requestDeadlineTime: { value: '23:30', isRequired: true, error: '', check: 0, success: 0, maxLength: 10, placeholder: '견적요청 만료날짜를 선택하세요.' },
     requestFormDc: { value: '', type: 'string', isRequired: true, error: '', check: 0, success: 0, placeholder: dc, maxLength: 1300, emptyMessage: '요청사항을 작성해주세요.' },
@@ -51,7 +49,6 @@ export const useTargetRequestWritePage = () => {
 
 
   const handleChange = (name, value, success = 0, error = '', maskingValue) => {
-    // console.log(value);
     setParams((prev) => ({
       ...prev,
       [name]: { ...prev[name], value, success, error, maskingValue: maskingValue || value },
@@ -128,7 +125,6 @@ export const useTargetRequestWritePage = () => {
       const requestDocGroupsNo = params.requestDocGroupsNo.value.map((el) => el.requestDocGroupNo);
       const p = { targetNo: params.requestDesignerNo.value, requestDocGroupsNo: requestDocGroupsNo.join(',') };
       const r = await getRequestTargetPrice(p);
-      // console.log('r', r, p);
       const { data } = r;
       setPrice(data || 0);
     } else {
@@ -176,7 +172,6 @@ export const useTargetRequestWritePage = () => {
 
           for (const k in parameter.value) {
             if (parameter.value[k].typeCount === '') {
-              // handleTypeCountChange(k, { ...parameter.value[k], error: '1' });
               isCaught = true;
             }
           }
@@ -220,7 +215,6 @@ export const useTargetRequestWritePage = () => {
 
       if (r.data) {
         showSnackbar('지정 요청서가 등록되었습니다.');
-        //handleNav(`/request/view/${r.data}`);
         handleNav(`/payment/reqeust/${r.data}`);
       }
     } else {
@@ -296,12 +290,10 @@ export const useTargetRequestWritePage = () => {
 
     const r = await getMyinfo();
     const { data } = r;
-    // console.log('getMyinfo=============> data11', data);
 
     if (data) {
       let cad = [];
       if (data.swNoName) cad = data.swNoName.split(',');
-      //if (data.swEtc) cad.push({ name: '기타:' + data.swEtc });
       if (data?.swEtc) cad.push('기타:' + data.swEtc);
       if (cad.length > 0) {
         setCads(cad.map((el) => ({ name: el })));
@@ -319,7 +311,6 @@ export const useTargetRequestWritePage = () => {
       }
 
       if (state?.checkedItems) {
-        // fetchRequestDoc();
         handleChange('requestDocGroupsNo', state?.checkedItems, state?.checkedItems.length > 0 ? 1 : 0);
       }
     } else {
