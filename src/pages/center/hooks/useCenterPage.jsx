@@ -21,7 +21,7 @@ const useCenterPage = () => {
 
   const [sortType, setSortType] = useState('');
   const [searchType, setSearchType] = useState(() => {
-    // console.log(location)
+
     return location.pathname === '/center' ? location?.state?.searchType || 1 : 1;
   });
   const [keyword, setKeyword] = useState('');
@@ -44,8 +44,6 @@ const useCenterPage = () => {
     pageCnt: perPage,
     randomSe: randomSe,
   });
-
-  console.log(params)
 
   const [isModal, setIsModal] = useState({ visible: false, value: '' });
   const [isModal2, setIsModal2] = useState({ visible: false, value: '' });

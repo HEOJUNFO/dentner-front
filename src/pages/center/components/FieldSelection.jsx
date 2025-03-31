@@ -5,7 +5,7 @@ import useFieldSelection from '../hooks/useFieldSelection';
 const FieldSelection = ({ onChange, params }) => {
   const { codeParentNo, items } = useFieldSelection();
 
-  console.log(items)
+
   return (
     <div>
       {codeParentNo.map((el, idx) => (
