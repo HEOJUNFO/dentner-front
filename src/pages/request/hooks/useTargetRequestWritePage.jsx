@@ -1,5 +1,5 @@
-import { useEffect,  useState } from 'react';
-import { format } from 'date-fns';
+import { useEffect,useState } from 'react';
+import {  format } from 'date-fns';
 import { useNav, useSnack } from '@components/hooks';
 import { getRequestTargetPrice, postRequestTargetForm } from '@api/Request';
 import UserStore from '@store/UserStore';
@@ -47,6 +47,149 @@ export const useTargetRequestWritePage = () => {
     requestSwName: { value: '', type: 'string', isRequired: true, error: '', check: 0, success: 0 },
   });
 
+  // 폼 상태를 localStorage에 저장하는 함수
+  const saveFormState = () => {
+    try {
+      const formState = {
+        requestDesignerNo: {
+          value: params.requestDesignerNo.value,
+          maskingValue: params.requestDesignerNo.maskingValue,
+        },
+        requestDocGroupsNo: {
+          value: params.requestDocGroupsNo.value,
+        },
+        requestFormSj: {
+          value: params.requestFormSj.value,
+        },
+        requestFormType: {
+          value: params.requestFormType.value,
+        },
+        requestDeadlineDate: {
+          value: params.requestDeadlineDate.value ? format(params.requestDeadlineDate.value, 'yyyy-MM-dd') : null,
+        },
+        requestDeadlineTime: {
+          value: params.requestDeadlineTime.value,
+        },
+        requestFormDc: {
+          value: params.requestFormDc.value,
+        },
+        requestSw: {
+          value: params.requestSw.value,
+        },
+        requestSwName: {
+          value: params.requestSwName.value,
+        },
+      };
+      
+      localStorage.setItem('targetRequestFormData', JSON.stringify(formState));
+    } catch (error) {
+      console.error('폼 상태 저장 중 오류 발생:', error);
+    }
+  };
+
+  // localStorage에서 폼 상태를 불러오는 함수
+  const loadFormState = () => {
+    try {
+      const savedState = localStorage.getItem('targetRequestFormData');
+      
+      if (savedState) {
+        const formState = JSON.parse(savedState);
+        
+        const newParams = { ...params };
+        
+        if (formState.requestDesignerNo?.value) {
+          newParams.requestDesignerNo = { 
+            ...newParams.requestDesignerNo, 
+            value: formState.requestDesignerNo.value,
+            maskingValue: formState.requestDesignerNo.maskingValue,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestDocGroupsNo?.value?.length > 0) {
+          newParams.requestDocGroupsNo = { 
+            ...newParams.requestDocGroupsNo, 
+            value: formState.requestDocGroupsNo.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestFormSj?.value) {
+          newParams.requestFormSj = { 
+            ...newParams.requestFormSj, 
+            value: formState.requestFormSj.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestFormType?.value?.length > 0) {
+          newParams.requestFormType = { 
+            ...newParams.requestFormType, 
+            value: formState.requestFormType.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestDeadlineDate?.value) {
+          newParams.requestDeadlineDate = { 
+            ...newParams.requestDeadlineDate, 
+            value: new Date(formState.requestDeadlineDate.value),
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestDeadlineTime?.value) {
+          newParams.requestDeadlineTime = { 
+            ...newParams.requestDeadlineTime, 
+            value: formState.requestDeadlineTime.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestFormDc?.value) {
+          newParams.requestFormDc = { 
+            ...newParams.requestFormDc, 
+            value: formState.requestFormDc.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestSw?.value) {
+          newParams.requestSw = { 
+            ...newParams.requestSw, 
+            value: formState.requestSw.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        if (formState.requestSwName?.value) {
+          newParams.requestSwName = { 
+            ...newParams.requestSwName, 
+            value: formState.requestSwName.value,
+            success: 1,
+            error: '',
+          };
+        }
+        
+        setParams(newParams);
+        
+        // 불러온 데이터에 디자이너와 의뢰서 정보가 있다면 가격 정보도 불러옴
+        if (newParams.requestDesignerNo.value && newParams.requestDocGroupsNo.value.length > 0) {
+          fetchTargetPrice();
+        }
+      }
+    } catch (error) {
+      console.error('저장된 폼 상태 불러오기 오류:', error);
+    }
+  };
 
   const handleChange = (name, value, success = 0, error = '', maskingValue) => {
     setParams((prev) => ({
@@ -138,7 +281,11 @@ export const useTargetRequestWritePage = () => {
     handleChange('requestDocGroupsNo', item, item.length > 0 ? 1 : 0);
   };
 
+  // 수정된 handleSumbit 함수
   const handleSumbit = async () => {
+    // 폼 상태 저장
+    saveFormState();
+    
     const parameters = { requestFormSe: seType };
     let inProgress = true;
 
@@ -212,13 +359,14 @@ export const useTargetRequestWritePage = () => {
     //return;
     if (inProgress) {
       const r = await postRequestTargetForm(parameters);
+      console.log(r)
 
       if (r.data) {
         showSnackbar('지정 요청서가 등록되었습니다.');
-        handleNav(`/payment/reqeust/${r.data}`);
+       handleNav(`/payment/reqeust/${r.data}`);
       }
-    } else {
     }
+  
   };
 
   useEffect(() => {
@@ -278,8 +426,25 @@ export const useTargetRequestWritePage = () => {
     }
   };
 
+  // 수정된 useEffect - 컴포넌트가 마운트될 때 폼 상태 불러오기
   useEffect(() => {
-    fetchMyInfo();
+    if (user) {
+      if (state?.id) {
+        // ID가 있는 경우 API에서 데이터 불러오기
+        fetchRequestForm();
+      } else if (state?.checkedItems) {
+        // state에서 checkedItems이 있는 경우 이를 사용
+        handleChange('requestDocGroupsNo', state?.checkedItems, state?.checkedItems.length > 0 ? 1 : 0);
+        // 나머지 데이터는 localStorage에서 불러오기
+        loadFormState();
+      } else {
+        // 그 외의 경우 localStorage에서 불러오기
+        loadFormState();
+      }
+    } else {
+      // 로그인 화면이동 처리
+      handleNav('/login');
+    }
   }, [user]);
 
   const fetchMyInfo = async () => {
@@ -305,18 +470,9 @@ export const useTargetRequestWritePage = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      if (state?.id) {
-        fetchRequestForm();
-      }
-
-      if (state?.checkedItems) {
-        handleChange('requestDocGroupsNo', state?.checkedItems, state?.checkedItems.length > 0 ? 1 : 0);
-      }
-    } else {
-      //login 화면이동 처리
-    }
+    fetchMyInfo();
   }, [user]);
+
   return {
     params,
     cads,
@@ -342,5 +498,7 @@ export const useTargetRequestWritePage = () => {
     setDeadlineObj,
     visibleM,
     setVisibleM,
+    saveFormState,  // 새 함수 추가
+    loadFormState,  // 새 함수 추가
   };
 };
