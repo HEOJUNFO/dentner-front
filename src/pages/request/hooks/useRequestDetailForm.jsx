@@ -4,7 +4,7 @@ import { useNav, useSnack } from '@components/hooks';
 import ModalStore from '@store/ModalStore';
 import { getTeethType, getCommonCode } from '@api/Common';
 import { postRequestDetail, postRequestOften, getRequestJson, putRequestDetail } from '@api/Request';
-import {initReactI18next, useTranslation} from 'react-i18next';
+import {useTranslation} from 'react-i18next';
 import useWindowSize from '../../../components/hooks/useWindowSize';
 
 export const useRequestDetailForm = () => {
@@ -41,11 +41,6 @@ export const useRequestDetailForm = () => {
     { className: 'radioSet d5', value: 'E', id: 'conical', label: 'Conical pontic' },
     { className: 'radioSet d6', value: 'F', id: 'spheroidal', label: 'Spheroidal pontic' },
   ];
-
-  // const valueSe = [
-  //   { title: '직접입력', id: 'direct', value: 'A' },
-  //   { title: '디자이너 수치값 사용', id: 'designer', value: 'B' },
-  // ];
 
   const [valueSe, setValueSe] = useState([]);
 
@@ -361,7 +356,6 @@ export const useRequestDetailForm = () => {
       const calcMethod = params[activeIndex].typeList.value[0]?.calcMethod;
 
       if (!calcMethod) {
-        // showWarnSnackbar('보철종류 선택해주세요.');
         showWarnSnackbar(t('version2_4.text120'));
       } else {
         let totalCnt = 0;
@@ -381,7 +375,6 @@ export const useRequestDetailForm = () => {
         const updatedTypeList = { ...updatedValue[activeIndex].typeList, value: [updatedTypeCount] };
 
         updatedValue[activeIndex] = { ...updatedValue[activeIndex], typeList: updatedTypeList };
-        // console.log('updatedValue', ucnt + lcnt);
       }
 
       return [...updatedValue];
@@ -543,7 +536,6 @@ export const useRequestDetailForm = () => {
 
   //보철종류추가
   const handleAddTeethType = (p, upper, middle, lower, check) => {
-    // console.log(p);
     //p 데이터 그대로 추가해서 보철종류 탭 살려야함
     const { dept, code, lowerCode, middleCode, upperCode } = p;
     let v = {};
@@ -587,22 +579,6 @@ export const useRequestDetailForm = () => {
     });
   };
 
-  //보철종류개수변경
-  // const handleTypeCountChange = (idx, newValue) => {
-  //   setParams((prevParams) => {
-  //     const updatedTypeListValue = [...prevParams.typeList.value];
-  //     updatedTypeListValue[idx] = newValue;
-
-  //     return {
-  //       ...prevParams,
-  //       typeList: {
-  //         ...prevParams.typeList,
-  //         value: updatedTypeListValue,
-  //       },
-  //     };
-  //   });
-  // };
-
   //보철종류삭제
   const handleRemoveType = (idx) => {
     console.log(activeIndex , idx)
@@ -619,21 +595,6 @@ export const useRequestDetailForm = () => {
       return [...updatedValue];
     });
   };
-
-  // const handleRemoveTypeDetail = (idx,idx2) => {
-  //   setParams((prevParams) => {
-  //     const updatedValue = [...prevParams];
-  //     const updatedTypeListValue = [...updatedValue[activeIndex].typeList.value];
-  //     updatedTypeListValue.splice(idx, 1);
-  //
-  //     updatedValue[activeIndex] = {
-  //       ...prevParams[activeIndex],
-  //       typeList: { ...updatedValue[activeIndex].typeList, value: updatedTypeListValue, success: 1, error: '' },
-  //       ...toothsValue, //보철종류 삭제시 선택 치아 초기화
-  //     };
-  //     return [...updatedValue];
-  //   });
-  // };
 
   //가공방법
   const handleChangeMillingType = (e) => {
@@ -656,13 +617,11 @@ export const useRequestDetailForm = () => {
   //자주쓰는말 저장
   const handleOftenSubmit = async () => {
     if (!params[activeIndex].requestDc.value) {
-      // showWarnSnackbar('상세설명 내용을 입력하세요.');
       showWarnSnackbar(t('version2_4.text26'));
       return;
     }
     const r = await postRequestOften({ oftenCn: params[activeIndex].requestDc.value });
     if (Boolean(Number(r.data))) {
-      // showSnackbar('등록했습니다.');
       showSnackbar(t('version2_4.text121'));
     }
   };
@@ -688,11 +647,6 @@ export const useRequestDetailForm = () => {
   };
 
   useEffect(() => {
-    // fetchCommonCode('766');
-    // fetchTeethTypeCode();
-    // if (state?.requestDocGroupNo) {
-    //   fetchData(state?.requestDocGroupNo);
-    // }
     const init = async () => {
       try {
         const [commonCodeResult, teethTypeCodeResult] = await Promise.all([fetchCommonCode('766'), fetchTeethTypeCode()]);
@@ -702,7 +656,7 @@ export const useRequestDetailForm = () => {
         }
 
         if (state?.requestDc) {
-          //handleChange('requestDc', state?.requestDc);
+
 
           setParams((prevParams) => {
             const updatedValue = [...state?.params];
@@ -732,13 +686,7 @@ export const useRequestDetailForm = () => {
             };
             return [...updatedValue];
           });
-          // handleChange('valueSe', 'A');
-          // handleChange('valueSj', state?.valueSj);
-          // handleChange('cementGapValue', state?.cementGapValue);
-          // handleChange('extraGapValue', state?.extraGapValue);
-          // handleChange('occlusalDistanceValue', state?.occlusalDistanceValue);
-          // handleChange('approximalDistanceValue', state?.approximalDistanceValue);
-          // handleChange('heightMinimalValue', state?.heightMinimalValue);
+          
           handleToggle();
         }
       } catch (error) {
@@ -785,7 +733,7 @@ export const useRequestDetailForm = () => {
     setActiveIndex(activeIdx);
 
     setMode('modify');
-    // 9.3 추가
+
     handleChange('valueSe', j[activeIdx].valueSe.value, 1);
   };
 
@@ -816,7 +764,6 @@ export const useRequestDetailForm = () => {
       requestDocNo,
       requestUuidKey: item.uuidKey,
       requestProcessNo: item.requestProcessNo.value, //가공방법
-      // requestProcessEtcName: '', //가공방법기타
       requestProcessEtcName: item.requestProcessEtcName.value, //가공방법기타
       requestDc: item.requestDc.value, //상세설명
       requestPonticSe: item.requestPonticSe.value, //Pontic 디자인 값 A B C D E F
@@ -905,8 +852,6 @@ export const useRequestDetailForm = () => {
     });
 
     if (!inProgress) {
-      // if (errorMsg)
-      // showWarnSnackbar('의뢰서 필수항목을 확인해주세요.');
       showWarnSnackbar(t('version2_4.text28'));
       return;
     }
@@ -916,7 +861,6 @@ export const useRequestDetailForm = () => {
     }
 
     if (files.length === 0) {
-      // showWarnSnackbar('첨부파일을 올려주세요.');
       showWarnSnackbar(t('version2_3.text111'));
       return;
     }
@@ -947,12 +891,9 @@ export const useRequestDetailForm = () => {
 
     try {
       if (mode === 'modify') {
-        //console.log(params);
-        //putRequestDetail
         if (apiResponse?.requestDocGroupNo) {
           const r = await putRequestDetail({ requestDocGroupNo: apiResponse.requestDocGroupNo, formData, fileProgress });
           if (r.data) {
-            // showSnackbar('의뢰서 저장 완료');
             showSnackbar(t('version2_4.text31'));
             handleNav('/request/end', { requestDocGroupNo: r.data, requestMode: 'detail' });
           }
@@ -962,13 +903,11 @@ export const useRequestDetailForm = () => {
         const r = await postRequestDetail(formData, fileProgress);
 
         if (r.data) {
-          // showSnackbar('의뢰서 저장 완료');
           showSnackbar(t('version2_4.text31'));
           handleNav('/request/end', { requestDocGroupNo: r.data, requestMode: 'detail' });
         }
       }
     } catch (e) {
-      // showWarnSnackbar('네트워크 오류입니다.');
       showWarnSnackbar(t('version2_1.text86'));
     } finally {
       actions.setLoading(false);
@@ -1003,10 +942,8 @@ export const useRequestDetailForm = () => {
         if (apiResponse?.requestDocGroupNo) {
           const r = await putRequestDetail({ requestDocGroupNo: apiResponse.requestDocGroupNo, formData, fileProgress });
           if (r.data) {
-            // showSnackbar('의뢰서 임시저장 완료');
             showSnackbar(t('version2_4.text32'));
             handleNav(`/request/view/doc/${r.data}`);
-            // handleNav(`/request/basket`, { type: 'detailmode' });
           }
         }
       }
@@ -1014,14 +951,11 @@ export const useRequestDetailForm = () => {
         const r = await postRequestDetail(formData, fileProgress);
 
         if (r.data) {
-          // showSnackbar('의뢰서 임시저장 완료');
           showSnackbar(t('version2_4.text32'));
           handleNav(`/request/view/doc/${r.data}`);
-          // handleNav(`/request/basket`, { type: 'detailmode' });
         }
       }
     } catch (e) {
-      // showWarnSnackbar('네트워크 오류입니다.');
       showWarnSnackbar(t('version2_1.text86'));
     } finally {
       actions.setLoading(false);
