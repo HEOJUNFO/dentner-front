@@ -1,4 +1,3 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { useNav, useSnack } from '@components/hooks';
 
 const useFileUpload = ({ fileList, setFileList, delFileList, setDelFileList, maxFile, fileTypes, maxSize }) => {
@@ -47,7 +46,6 @@ const useFileUpload = ({ fileList, setFileList, delFileList, setDelFileList, max
       alert('허용된 파일만 업로드 할 수 있습니다. 해당 확장자가 아닌 파일은 제외되었습니다.');
     }
 
-    // Promise.all(filesArray.map((f) => readFile(f)))
     Promise.all(newFilesArray.map((f) => readFile(f)))
       .then((newFiles) => {
         const updatedFiles = [...fileList, ...newFiles];

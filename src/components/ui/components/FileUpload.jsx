@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { DragDropImage } from '@components/common';
 import useFileUpload from '@components/hooks/useFileUpload';
 import FileItem from './FileItem';
@@ -39,12 +38,6 @@ FileUpload.defaultProps = {
   maxFile: 10,
   maxSize: 500,
   fileTypes: ['pdf', 'jpg', 'png'],
-  // label: <label>drag&drop 파일 첨부하기</label>,
-  // guide: (
-  //   <em className="guide">
-  //     [파일형식] <i>pdf, jpg, png</i> (500MB 이하)
-  //   </em>
-  // ),
 };
 
 export default FileUpload;

@@ -213,7 +213,12 @@ const RequestEasyForm = () => {
                   </em>
                 </dt>
                 <dd>
-                  <FileUpload2/>
+                  <FileUpload2
+                    fileList={files}
+                    setFileList={setFiles}
+                    delFileList={delFiles}
+                    setDelFileList={setDelFiles}
+                  />
                 </dd>
               </dl>
               <dl>
