@@ -58,7 +58,7 @@ const store = persist(
   immer((set, get) => UserStore(set, get)),
   {
     name: 'UserStore',
-    storage: createJSONStorage(() => sessionStorage, {
+    storage: createJSONStorage(() => localStorage, {  // sessionStorage에서 localStorage로 변경
       reviver: (key, value) => {
         return decryptState(value);
         // return value;
@@ -67,7 +67,7 @@ const store = persist(
         return encryptState(value);
         // return value;
       },
-    }), // 세션 스토리지 사용
+    }),
   }
 );
 export default create(devtools(store));

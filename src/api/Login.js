@@ -12,8 +12,9 @@ export const postLogin = async ({ memberEmail, memberPassword, fcmToken }) => {
 
     const { accessToken, grantType, refreshToken } = data;
     console.log('refreshToken', refreshToken);
-    // 액세스 토큰을 로컬 스토리지에 저장
-    sessionStorage.setItem('token', accessToken);
+    
+    // sessionStorage를 localStorage로 변경
+    localStorage.setItem('token', accessToken);
 
     // 리프레시 토큰을 쿠키에 저장
     document.cookie = `refreshToken=${refreshToken}; path=/; secure; HttpOnly`;
@@ -156,8 +157,9 @@ export const postGoogleLogin = async ({ socialSe, uniqueKey, memberEmail, fcmTok
     if (data) {
       const { accessToken, grantType, refreshToken } = data;
       // console.log('refreshToken', refreshToken);
-      // 액세스 토큰을 로컬 스토리지에 저장
-      sessionStorage.setItem('token', accessToken);
+      
+      // sessionStorage를 localStorage로 변경
+      localStorage.setItem('token', accessToken);
 
       // 리프레시 토큰을 쿠키에 저장
       document.cookie = `refreshToken=${refreshToken}; path=/; secure; HttpOnly`;

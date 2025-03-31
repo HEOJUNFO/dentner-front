@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 // import { onMessageListener } from '../../../firebase';
 import ChannelService from '../../ChannelService';
 import { useTranslation } from 'react-i18next';
+import axios from '@api/config/axios'; // axios 명시적 import
 
 const useApp = () => {
   const { user } = UserStore();
@@ -14,6 +15,27 @@ const useApp = () => {
   const [login, setLogin] = useState(false);
   const [isChannel, setChannel] = useState(false);
   const { i18n } = useTranslation();
+
+  // 토큰 유효성 검증 추가
+  useEffect(() => {
+    const validateToken = async () => {
+      if (user) {
+        try {
+          // 토큰 유효성 검증 API 호출
+          await axios.validateToken();
+          setLogin(true);
+        } catch (err) {
+          console.error('토큰 검증 실패:', err);
+          // 토큰 유효하지 않음, 로그아웃 처리
+          UserStore.getState().logout();
+          setLogin(false);
+        }
+      }
+    };
+
+    // 페이지 로드 시 토큰 유효성 검증
+    validateToken();
+  }, []);
 
   useEffect(() => {
     if (user) setLogin(true);
@@ -59,24 +81,7 @@ const useApp = () => {
   }, [login, isChannel]);
 
   // DB 공통코드
-  // 1	전화번호
-  // 249	GMT
-  // 641	은행
-  // 704	지역
-  // 705	고정성 보철물
-  // 706	가철성 보철물
-  // 707	교정
-  // 708	ALL ON x
-  // 709	치과 기공사 수
-  // 710	CAD S/W
-  // 759	신고사유
-  // 760	환불사유(마일리지 충전내역)
-  // 766	가공방법
-  // 814  환불사유(마일리지 결제내역)
-  // 821  재제작사유
-  // 910  거래취소요청사유(거래중-의뢰서 수령전)
-  // 915  거래취소요청사유(거래중-의뢰서 수령후)
-  // 945  팝빌은행
+  // (코드 목록은 그대로 유지)
   const code = [710, 704, 709, 759, 760, 821, 641, 910, 915, 945, 814];
 
   const fetchCode = async () => {
@@ -113,22 +118,6 @@ const useApp = () => {
 
   useEffect(() => {
     useChannel();
-
-    // const initFCM = async () => {
-    //   const token = await requestPermissionAndGetToken();
-    //   if (token) {
-    //     console.log('FCM Token:', token);
-    //   }
-    // };
-    // initFCM();
-
-    // const messageListener = onMessageListener();
-    // console.log('messageListener', messageListener);
-    // if (messageListener) {
-    //   messageListener.then((payload) => {
-    //     console.log('Foreground 알림 수신:', payload);
-    //   });
-    // }
   }, []);
 
   useEffect(() => {

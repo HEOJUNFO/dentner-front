@@ -11,16 +11,43 @@ import { requestPermissionAndGetToken } from '../../../../firebase';
 export const useLogin = () => {
   const { t, i18n } = useTranslation();
   const { handleNav } = useNav();
-  const { user, login } = UserStore();
-  // const { fetchDesignerMileage } = useMileageOfficePage();
+  const { user, login, logout } = UserStore(); // logout 추가
   const [fcm, setFcm] = useState();
   const [params, setParams] = useState({
-    // memberEmail: 'test',
-    // memberPassword: '00',
     memberEmail: '',
     memberPassword: '',
   });
   const [error, setError] = useState('');
+
+  // 앱이 포그라운드로 돌아올 때 토큰 유효성 확인
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        // 토큰 유효성 검증
+        const validateToken = async () => {
+          try {
+            // 간단한 요청으로 토큰 유효성 확인
+            await axios.get('/api/v1/mypage/profile');
+          } catch (err) {
+            if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+              // 토큰 만료 시 로그아웃
+              logout();
+              // 로컬 스토리지에서 토큰 제거
+              localStorage.removeItem('token');
+            }
+          }
+        };
+        
+        validateToken();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [user, logout]);
 
   const initFCM = async () => {
     const token = await requestPermissionAndGetToken();
@@ -77,7 +104,6 @@ export const useLogin = () => {
   };
 
   /** Google Login */
-
   const handleSubmitSns = async (el) => {
     try {
       const { user, socialSe } = el;
@@ -133,7 +159,21 @@ export const useLogin = () => {
 
   useEffect(() => {
     initFCM();
-  }, []);
+    
+    // 다른 탭에서 로그아웃했을 때 현재 탭도 로그아웃 처리
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' && !e.newValue && user) {
+        // 토큰이 제거됐을 때 로그아웃 처리
+        logout();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [user, logout]);
 
   return { user, handleChange, handleSubmit, params, error, googleLoginHandler };
 };

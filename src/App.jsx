@@ -12,15 +12,15 @@ import useApp from './components/hooks/useApp';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import useScrollRestoration from '@components/hooks/useScrollRestoration';
 import Error500 from '@pages/error/Error500';
+import UserStore from '@store/UserStore'; // UserStore 추가
+import axios from '@api/config/axios'; // axios 추가
 
 import {requestPermissionAndGetToken, requestGetToken, onMessageListener} from '../firebase'
-
 
 function ScrollRestoration() {
   useScrollRestoration();
   return null;
 }
-
 
 function App() {
   const { i18n } = useTranslation();
@@ -29,6 +29,31 @@ function App() {
   //FIXME: env 파일로 들어가야할 부분
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET;
+  
+  // 페이지 가시성 변경 시 토큰 유효성 검증 추가
+  useEffect(() => {
+    const handleVisibility = async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('앱이 포그라운드로 돌아옴');
+        
+        // 앱이 다시 포그라운드로 돌아올 때 토큰 유효성 재검증
+        const user = UserStore.getState().user;
+        if (user) {
+          try {
+            await axios.validateToken();
+          } catch (err) {
+            console.error('토큰 검증 실패(가시성 변경):', err);
+            UserStore.getState().logout();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
 
   useEffect(() => {
     const setNotify = async () => {
@@ -36,7 +61,6 @@ function App() {
       console.log(result)
 
       onMessageListener((payload) => {
-
         const { title, body, url } = payload.data;
 
         if (Notification.permission === 'granted') {
@@ -53,15 +77,17 @@ function App() {
 
     setTimeout(() => {
       setNotify()
-    },2000)
+    }, 2000)
 
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('앱이 포그라운드로 돌아옴');
-
-
+    // 다른 탭에서 로그아웃 시 현재 탭에도 반영
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' && !e.newValue) {
+        // 토큰이 제거됐을 때 로그아웃 처리
+        UserStore.getState().logout();
       }
     };
+
+    window.addEventListener('storage', handleStorageChange);
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
@@ -72,12 +98,10 @@ function App() {
       });
     }
 
-      document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('storage', handleStorageChange);
     };
-
-  },[])
+  }, []);
 
   if (isLoading) return <SuspenseLoading />;
   if (error) return <Error500 />;
@@ -120,7 +144,6 @@ function App() {
                       >
                         {route.routes &&
                           route.routes.map((routes, idxx) => {
-                            // return <Route key={idxx} path={routes.path} element={<routes.component />} />;
                             return (
                               <Route
                                 key={idxx}
