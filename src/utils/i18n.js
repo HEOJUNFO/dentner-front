@@ -95,6 +95,7 @@ i18n.use(initReactI18next).init({
           not_read: `Unread`,
           withdrawal: `Quit`,
           mutate: `Edit`,
+          inquiry: `Inquiry`,
         },
         header: {
           introduce_service: `Services`,
@@ -1161,6 +1162,7 @@ i18n.use(initReactI18next).init({
           text125: `Only allowed file extensions can be uploaded.`,
           text126: `File size exceeded the limit.`,
           text127: `Save as Frequently Used Phrase`,
+          text128: `Please enter your inquiry.`,
         },
         version2_4: {
           text1: `Less`,
@@ -1390,6 +1392,7 @@ i18n.use(initReactI18next).init({
           not_read: '읽지않음',
           withdrawal: '탈퇴하기',
           mutate: '수정하기',
+          inquiry: '문의 내용'
         },
         header: {
           introduce_service: '서비스 소개',
@@ -2474,6 +2477,7 @@ i18n.use(initReactI18next).init({
           text125: '허용된 파일확장자만 업로드 할 수 있습니다.',
           text126: '파일 사이즈가 초과했습니다.',
           text127: '자주쓰는 말로 저장하기',
+          text128: '문의 내용을 입력하세요.'
         },
         version2_4: {
           text1: '접기',

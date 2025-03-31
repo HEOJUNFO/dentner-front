@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput } from '@components/common';
 import { FileUpload } from '@components/ui';
 import { useSnack } from '@components/hooks';
 import ModalStore from '@store/ModalStore';
 import { post3d } from '@api/Payment';
-import { replaceToBr, withCommas, strToLength } from '@utils/common';
+import { strToLength } from '@utils/common';
 
 const ThreeDCommsModal = ({ onClose, onFetch, requestFormNo }) => {
   const { t } = useTranslation();
@@ -66,13 +66,13 @@ const ThreeDCommsModal = ({ onClose, onFetch, requestFormNo }) => {
             <div className="detail">
               <dl>
                 <dt>
-                  {t('base.title')} <sup>필수항목</sup>
+                  {t('base.inquiry')} <sup>필수항목</sup>
                 </dt>
                 <dd>
                   <BaseInput
                     type="text"
                     id="threeSj"
-                    placeholder={t('version2_3.text110')}
+                    placeholder={t('version2_3.text128')}
                     value={threeSj?.value}
                     error={threeSj?.error}
                     maxLength={50}
