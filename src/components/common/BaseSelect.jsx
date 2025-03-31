@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { BaseInput } from '@components/common';
-// import useBaseSelect from '@components/hooks/useBaseSelect';
 
 const BaseSelect = ({ id, items, titleName, valueName, onChange, placeholder, className, selectedValue, error, disabled = false, init, input = false, inputValue, valueChange, ...props }) => {
-  // const { selectRef, visible, setVisible, selected, setSelected } = useBaseSelect({ onChange });
   const selectRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [selected, setSelected] = useState();
@@ -60,7 +58,12 @@ const BaseSelect = ({ id, items, titleName, valueName, onChange, placeholder, cl
               {el[titleName]}
               {el[titleName]?.includes('직접입력') && input && (
                 <>
-                  <BaseInput style={{ marginLeft: 5, height: '80%' }} value={inputValue} onChange={(e) => valueChange && valueChange(e)} />
+                  <BaseInput 
+                    type="text" 
+                    style={{ marginLeft: 5, height: '80%' }} 
+                    value={inputValue} 
+                    onChange={(e) => valueChange && valueChange(e)} 
+                  />
                   <button className="btnB ss" style={{ marginLeft: 5, height: '80%', width: 30, fontSize: 10 }} onClick={() => setSelected({ ...el, pid: id })}>
                     입력
                   </button>

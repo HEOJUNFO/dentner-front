@@ -355,8 +355,8 @@ const FileUpload2 = ({
                 <div style={fileIconStyle}>
                 <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
 <circle cx="17" cy="17" r="17" fill="#F2F7FF"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M10.75 10.75H15.081C15.499 10.75 15.8893 10.9589 16.1211 11.3066L16.6289 12.0684C16.8607 12.4161 17.251 12.625 17.669 12.625H23.25C23.9404 12.625 24.5 13.1846 24.5 13.875V22C24.5 22.6904 23.9404 23.25 23.25 23.25H10.75C10.0596 23.25 9.5 22.6904 9.5 22V12C9.5 11.3096 10.0596 10.75 10.75 10.75Z" stroke="#4B72FE" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M18.875 15.75L16.375 18.875L15.125 17.375" stroke="#4B72FE" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+<path fillRule="evenodd" clipRule="evenodd" d="M10.75 10.75H15.081C15.499 10.75 15.8893 10.9589 16.1211 11.3066L16.6289 12.0684C16.8607 12.4161 17.251 12.625 17.669 12.625H23.25C23.9404 12.625 24.5 13.1846 24.5 13.875V22C24.5 22.6904 23.9404 23.25 23.25 23.25H10.75C10.0596 23.25 9.5 22.6904 9.5 22V12C9.5 11.3096 10.0596 10.75 10.75 10.75Z" stroke="#4B72FE" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+<path d="M18.875 15.75L16.375 18.875L15.125 17.375" stroke="#4B72FE" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
 </svg>
                 </div>
                 <div>
