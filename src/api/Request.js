@@ -94,7 +94,7 @@ export const postRequestDetail = async (formData, fileProgress) => {
  * @param {*} param0
  * @returns
  */
-export const putRequestDetail = async ({ requestDocGroupNo, formData }) => {
+export const putRequestDetail = async ({ requestDocGroupNo, formData, fileProgress }) => {
   try {
     const response = await axios.put(`/api/v1/request/detail/${requestDocGroupNo}`, formData, {
       headers: {
