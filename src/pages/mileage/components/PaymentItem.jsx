@@ -21,7 +21,6 @@ const PaymentItem = ({ type = '', items = [] }) => {
         </tr>
       )}
       {items.map((item, idx) => {
-        console.log(item);
         return (
           <tr key={`PaymentItem${idx}`} className={`${item.mileageSe === 'D' ? 'refund' : ''}`}>
             <td>
@@ -36,44 +35,16 @@ const PaymentItem = ({ type = '', items = [] }) => {
             <td className="sts">
               {item.mileageSe !== 'D' &&
                 (item.mileageStatus === 'A' ? (
-                  item.mileageAmount > 0 ? (
-                    <BaseButton label={t('mileage.refund')} onClick={() => item.onRefund()} />
-                  ) : (
-                    <></>
-                  )
+                  <BaseButton label={t('mileage.refund')} onClick={() => item.onRefund()} />
                 ) : item.mileageStatus === 'B' ? (
                   <em>{t('mileage.refund_ing')}</em>
                 ) : (
                   <em>{t('mileage.refund_complete')}</em>
                 ))}
-              {/* 환불요청 A, 환불진행중 B, 환불완료 C */}
-              {/* {item.mileageStatus === 'A' && <BaseButton label={t('mileage.refund')} />}
-              {item.mileageStatus === 'B' && <em>{t('mileage.refund_ing')}</em>}
-              {item.mileageStatus === 'C' && <em>{t('mileage.refund_complete')}</em>} */}
             </td>
           </tr>
         );
       })}
-      {/* <tr className="refund">
-              <td>
-                <em>결제 환불</em>
-              </td>
-              <td>+ 450,000,000 P(￦)</td>
-              <td>김은지 치자이너 / 요청서 제목</td>
-              <td>2024.05.05</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>
-                <em>결제</em>
-              </td>
-              <td>- 900,000,000 P(￦)</td>
-              <td>김은지 치자이너 / 요청서 제목</td>
-              <td>2024.05.04</td>
-              <td>
-                <BaseButton label={'환불요청'} onClick={() => setIsModal4(true)} />
-              </td>
-            </tr> */}
     </>
   );
 };
