@@ -29,7 +29,9 @@ const Designer = () => {
     alarmType, setAlarmType, handleAlarmSet
   } = useDesigner();
   const { handleEmailFocus, handlePassword, handleVerifyClick, handleEmailBlur, handleDupClick } = useValid({ params, setParams });
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
+
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
 
   return (
     <>
@@ -91,16 +93,84 @@ const Designer = () => {
 
             {/* 휴대폰인증 */}
             <SmsVerify certification="C" onVerifyClick={handleVerifyClick} err={params.memberHp.error} onChange={handleSmsVerify} />
-            <dl>
-              <dt>
-                {t('mypage.talk')}
-                <sup>{t('base.required')}</sup>
-              </dt>
-              <dd className="typeChoice">
-                <BaseButton className={`${alarmType?.includes('2') ? 'on' : ''}`} label={t('mypage.kakao')} onClick={() => handleAlarmSet('2')} />
-                <BaseButton className={`${alarmType?.includes('1')  ? 'on' : ''}`} label={t('mobile App')} onClick={() => handleAlarmSet('1')} />
-              </dd>
-            </dl>
+            
+            <dl style={{ margin: '20px 0' }}>
+  <dt style={{ 
+    fontSize: '16px', 
+    fontWeight: 'bold', 
+    marginBottom: '10px', 
+    display: 'flex', 
+    alignItems: 'center' 
+  }}>
+    {isEnglish ? 'Notification Selection' : '알림톡 선택'}
+    <sup style={{ 
+      color: 'blue', 
+      marginLeft: '5px', 
+      fontSize: '18px' 
+    }}>*</sup>
+  </dt>
+  
+  <div style={{ 
+    fontSize: '14px', 
+    color: '#666', 
+    marginBottom: '15px' 
+  }}>
+    {isEnglish 
+      ? 'Please select your notification method. (Multiple selections possible)'
+      : '알림톡 방식을 선택해 주세요. (중복 선택 가능)'}
+  </div>
+  
+  <dd style={{ 
+    display: 'flex', 
+    gap: '10px' 
+  }}>
+    <BaseButton 
+      className={`${alarmType?.includes('2') ? 'on' : ''}`} 
+      label={isEnglish ? 'KakaoTalk' : '카카오톡'} 
+      onClick={() => handleAlarmSet('2')} 
+      style={{
+        padding: '15px 30px',
+        border: alarmType?.includes('2') ? '1px solid #4e6ef2' : '1px solid #f2f2f2',
+        borderRadius: '5px',
+        backgroundColor: alarmType?.includes('2') ? 'white' : '#f2f2f2',
+        color: alarmType?.includes('2') ? '#4e6ef2' : '#888',
+        flex: '1',
+        fontSize: '16px',
+        cursor: 'pointer',
+        textAlign: 'center',
+        fontWeight:  'bold'
+      }}
+    />
+    <BaseButton 
+      className={`${alarmType?.includes('1') ? 'on' : ''}`} 
+      label="Mobile App" 
+      onClick={() => handleAlarmSet('1')} 
+      style={{
+        padding: '15px 30px',
+        border: alarmType?.includes('1') ? '1px solid #4e6ef2' : '1px solid #f2f2f2',
+        borderRadius: '5px',
+        backgroundColor: alarmType?.includes('1') ? 'white' : '#f2f2f2',
+        color: alarmType?.includes('1') ? '#4e6ef2' : '#888',
+        flex: '1',
+        fontSize: '16px',
+        cursor: 'pointer',
+        textAlign: 'center',
+        fontWeight: 'bold'
+      }}
+    />
+  </dd>
+  
+  <div style={{ 
+    fontSize: '12px', 
+    color: '#888', 
+    marginTop: '8px' 
+  }}>
+    {isEnglish 
+      ? '* Mobile App notifications are available after downloading the app.'
+      : '* 모바일 App알림은 다운로드 이후 가능합니다.'}
+  </div>
+</dl>
+
             <dl>
               <dt>
                 {t('login.nickname')}

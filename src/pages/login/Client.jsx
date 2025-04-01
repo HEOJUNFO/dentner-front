@@ -21,8 +21,6 @@ const Client = () => {
               <sup>{t('base.required')}</sup>
             </dt>
             <dd className="typeChoice">
-              {/* <input type="button" value="한국인" className={`${joinTab === 1 ? 'on' : ''}`} onClick={() => setJoinTab(1)} />
-              <input type="button" value="외국인" className={`${joinTab === 2 ? 'on' : ''}`} onClick={() => setJoinTab(2)} /> */}
               <BaseButton className={`${joinTab === 1 ? 'on' : ''}`} label={t('base.korean')} onClick={() => setJoinTab(1)} />
               <BaseButton className={`${joinTab === 2 ? 'on' : ''}`} label={t('base.foreigner')} onClick={() => setJoinTab(2)} />
             </dd>

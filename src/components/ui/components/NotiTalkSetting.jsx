@@ -7,7 +7,9 @@ import { useTranslation } from 'react-i18next';
 
 const NotiTalkSetting = ({ onChange }) => {
   const { talkOk, params, handleChange, handleAlarmSet } = useNotiTalkSetting({ onChange });
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
+
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
 
   return (
     <>
@@ -61,6 +63,15 @@ const NotiTalkSetting = ({ onChange }) => {
             ))}
           </span>
         </dd>
+        <div style={{ 
+    fontSize: '12px', 
+    color: '#888', 
+    marginTop: '8px' 
+  }}>
+    {isEnglish 
+      ? '* Mobile App notifications are available after downloading the app.'
+      : '* 모바일 App알림은 다운로드 이후 가능합니다.'}
+  </div>
       </dl>
     </>
   );
