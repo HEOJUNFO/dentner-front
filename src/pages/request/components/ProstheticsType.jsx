@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef} from 'react';
 import { BaseInput, BaseButton, BaseSelect } from '@components/common';
 import { useProstheticsType } from '../hooks/useProstheticsType';
 import { useTranslation } from 'react-i18next';

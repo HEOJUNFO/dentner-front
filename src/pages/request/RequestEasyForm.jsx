@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import { BaseInput, BaseSelect, ItemTag, BaseButton, ImageSettingEx, ModalPresent, BaseTextArea } from '@components/common';
+import { BaseInput, BaseSelect,  BaseButton,  ModalPresent, BaseTextArea } from '@components/common';
 import { RadioFilter,  CheckSet } from '@components/ui';
 import FileUpload2 from '../../components/ui/components/FileUpload2';
 
