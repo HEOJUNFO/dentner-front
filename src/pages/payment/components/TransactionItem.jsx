@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 import { Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
-import { Pagenation, BaseInput, BaseSelect, BaseButton, ModalPresent, ModalAlertPresent } from '@components/common';
+import { BaseButton, ModalPresent, ModalAlertPresent } from '@components/common';
 import { CancelModal, CancelCallModal, ConfirmModal } from '@components/ui';
 import useTransactionItem from '../hooks/useTransactionItem';
 import { replaceToBr, withCommas } from '@utils/common';
@@ -23,6 +23,8 @@ const TransactionItem = ({
   addPayStatus, // 추가금요청여부
   reviewYn, // 리뷰작성여부
   statusName,
+  statusNameKOR,
+  statusNameENG,
   status,
   dealStatusName,
   dealStatus,
@@ -75,7 +77,9 @@ const TransactionItem = ({
   } = useTransactionItem({
     onFetch,
   });
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
+
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   const { handleRoom } = useChat();
   const [isToggle, setToggle] = useState(true);
   return (
@@ -86,10 +90,8 @@ const TransactionItem = ({
             <strong
               className={`iSts ${status === 'B' ? 'select' : ''} ${status === 'C' ? 'ing' : ''} ${status === 'D' ? 'end' : ''} ${status === 'E' || status === 'G' || status === 'H' ? 'cancel' : ''} ${status === 'F' ? 'cing' : ''}`}
             >
-              {/*{requestType === 'A' && <>{statusName}</>}*/}
-              {/*{(status !== 'C' || dealStatus !== 'E') && requestType === 'B' && <>{statusName}</>}*/}
-              {requestType === 'A' && <>{t(`status.${statusName}`)}</>}
-              {(status !== 'C' || dealStatus !== 'E') && requestType === 'B' && <>{t(`status.${statusName}`)}</>}
+              {requestType === 'A' && <>{isEnglish ? statusNameENG : statusNameKOR}</>}
+              {(status !== 'C' || dealStatus !== 'E') && requestType === 'B' && <>{isEnglish ? statusNameENG : statusNameKOR}</>}
 
               {status === 'C' && dealStatus === 'E' && !requestRemakingNo && requestType === 'B' && <>{t('version2_2.text148')}</>}
               {status === 'C' && dealStatus === 'E' && requestRemakingNo && requestType === 'B' && <>{t('version2_2.text148')}</>}

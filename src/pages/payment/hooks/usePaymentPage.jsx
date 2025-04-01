@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTransactions, deleteAddPay, deleteRemaking } from '@api/Payment';
 import { usePrevious } from '@components/hooks';
 import UserStore from '@store/UserStore';
 import sampleProfile from '@assets/images/no_user.png';
-import { getDate } from 'date-fns';
-import dayjs from 'dayjs';
 import { getTodayFormat, getTodaySubstract } from '../../../utils/DateUtil';
 
 const usePaymentPage = () => {
@@ -162,7 +160,6 @@ const usePaymentPage = () => {
         onClose: () => setConModal({ visible: false, value: '' }),
       },
     });
-    // console.log(requestFormNo);
   };
 
   const handleCancelRework = (requestFormNo) => {
@@ -203,6 +200,8 @@ const usePaymentPage = () => {
       totalAmount: item.totalAmount, // 결제마일리지
       addAmount: item.addAmount, // 추가결제마일리지
       statusName: item.requestStatusName,
+      statusNameKOR:item.requestStatusNameKOR,
+      statusNameENG:item.requestStatusNameENG,
       status: item.requestStatus,
       isMyRequest: item.cancelRequestYn === 'Y' ? true : false,
       dealStatusName: item.requestDealStatusName,

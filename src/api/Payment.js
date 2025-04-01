@@ -53,6 +53,65 @@ export const getTransactions = async ({ requestFormSe, params }) => {
     const response = await axios.get(`/api/v1/transaction${requestFormSe ? `/${requestFormSe}` : ''}`, {
       params,
     });
+    
+    // 상태 코드 매핑 정의
+    const statusNameMapping = {
+      'cancel': {
+        KOR: '취소됨',
+        ENG: 'Canceled'
+      },
+      '요청거절': {
+        KOR: '요청거절',
+        ENG: 'Request Rejected'
+      },
+      'quote_ing': {
+        KOR: '견적 진행 중',
+        ENG: 'Quote in Progress'
+      },
+      'select_dental_designer': {
+        KOR: '치자이너 선택중',
+        ENG: 'Selecting Dental Designer'
+      },
+      'cancel_wait': {
+        KOR: '취소 대기',
+        ENG: 'Awaiting Cancellation'
+      },
+      'trade': {
+        KOR: '거래 중',
+        ENG: 'Trading'
+      },
+      'complete': {
+        KOR: '완료',
+        ENG: 'Completed'
+      },
+      '요청거절(치자이너)': {
+        KOR: '요청거절(치자이너)',
+        ENG: 'Request Rejected (Dental Designer)'
+      },
+      '치자이너 수락대기': {
+        KOR: '치자이너 수락대기',
+        ENG: 'Awaiting Dental Designer Acceptance'
+      }
+    };
+
+    // 응답 데이터의 정확한 구조에 맞게 접근
+    if (response.data && response.data.data && response.data.data.list && Array.isArray(response.data.data.list)) {
+      console.log('dd');
+      response.data.data.list = response.data.data.list.map(item => {
+        const statusName = item.requestStatusName || '';
+        const mapping = statusNameMapping[statusName] || {
+          KOR: statusName, // 매핑이 없는 경우 원래 값 사용
+          ENG: statusName
+        };
+
+        return {
+          ...item,
+          requestStatusNameKOR: mapping.KOR,
+          requestStatusNameENG: mapping.ENG
+        };
+      });
+    }
+    
     return response.data;
   } catch (error) {
     throw error;

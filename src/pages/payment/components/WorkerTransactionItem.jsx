@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
-import { Pagenation, BaseInput, BaseSelect, BaseButton, ModalPresent, ModalAlertPresent } from '@components/common';
+import { BaseButton, ModalPresent, ModalAlertPresent } from '@components/common';
 import { CancelModal, CancelCallModal, ConfirmModal } from '@components/ui';
 import useWorkerTransactionItem from '../hooks/useWorkerTransactionItem';
 import { useTranslation } from 'react-i18next';
 import { replaceToBr, withCommas } from '@utils/common';
-import sampleProfile from '@assets/images/no_user.png';
 import ModalStore from '@store/ModalStore';
 import useChat from '@components/hooks/useChat';
-import { dateFormat, timeFormat } from '@utils/DateUtil';
+import { dateFormat } from '@utils/DateUtil';
 
 /**
  * 요청서
@@ -26,6 +25,8 @@ const WorkerTransactionItem = ({
   estimate3dYn, // 3d 뷰어 소통여부
   addPayStatus, // 추가금요청여부
   statusName,
+  statusNameKOR,
+  statusNameENG,
   status,
   dealStatusName,
   dealStatus,
@@ -81,7 +82,8 @@ const WorkerTransactionItem = ({
     handleConfirmModal,
   } = useWorkerTransactionItem({ onFetch });
   const { actions } = ModalStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   const { handleRoom } = useChat();
 
   const [isToggle, setToggle] = useState(true);
@@ -98,13 +100,13 @@ const WorkerTransactionItem = ({
               className={`iSts ${status === 'B' ? '' : ''} ${status === 'C' ? 'ing' : ''} ${status === 'D' ? 'end' : ''} ${status === 'E' || status === 'G' || status === 'H' ? 'cancel' : ''} ${status === 'F' ? 'cing' : ''}`}
               // select
             >
-              {status === 'B' && t(`status.${statusName}`)}
-              {status === 'I' && t(`status.${statusName}`)}
+              {status === 'B' && (isEnglish ? statusNameENG : statusNameKOR)}
+              {status === 'I' && (isEnglish ? statusNameENG : statusNameKOR)}
               {!(status === 'C' && dealStatus === 'G' && requestType === 'B') && status !== 'B' && status !== 'I' && !(status === 'C' && dealStatus === 'E' && requestRemakingNo) && (
-                <>{statusName === '요청거절' ? t(`status.${statusName}`) : t(`status.${statusName}`)}</>
+                <>{isEnglish ? statusNameENG : statusNameKOR}</>
               )}
-              {status === 'C' && dealStatus === 'G' && requestType === 'B' && <>{t(`status.${statusName}`)}</>}
-              {status === 'C' && dealStatus === 'E' && requestRemakingNo && requestType === 'B' && <>{t(`status.${statusName}`)}</>}
+              {status === 'C' && dealStatus === 'G' && requestType === 'B' && <>{isEnglish ? statusNameENG : statusNameKOR}</>}
+              {status === 'C' && dealStatus === 'E' && requestRemakingNo && requestType === 'B' && <>{isEnglish ? statusNameENG : statusNameKOR}</>}
             </strong>
           </span>
           <strong className="time">
@@ -805,10 +807,6 @@ const WorkerTransactionItem = ({
                       {/* 클릭 시 className='bPSToggle on' */}
                       {isToggle && (
                         <ol className={`${status === 'F' || status === 'E' ? 'step6 stop' : 'step6'}`}>
-                          {/* <li style={{ cursor: 'pointer' }} onClick={() => handleDetail(isDeal({ step: dealStatus, maxStep: 'A' }), 'A', requestEstimateNo)} className={`end`}>
-                          <em>1</em>
-                          <span>견적서</span>
-                        </li> */}
                           <li
                             style={{ cursor: 'pointer' }}
                             onClick={() => handleDetail(isDeal({ step: dealStatus, maxStep: 'B' }), 'B', requestFormNo)}
@@ -878,7 +876,6 @@ const WorkerTransactionItem = ({
                         </dd>
                       </dl>
                       <div className="right listStsBtn">
-                        {/* <BaseButton label={'재제작 요청철회'} className={'btnW'} /> */}
                         <BaseButton label={t('transaction.detail')} className={'btnL'} onClick={() => handleNav(`/payment/reqeust/rework/view/${requestFormNo}`)} />
                       </div>
                     </div>
@@ -926,7 +923,6 @@ const WorkerTransactionItem = ({
                         </dd>
                         <dd>
                           <span className="time">
-                            {/* 2024. 05. 20 <span>14:30</span> */}
                             {dateFormat('yyyy.MM.DD | H:i', requestPayDt)}
                           </span>
                         </dd>
@@ -963,8 +959,6 @@ const WorkerTransactionItem = ({
               onClick={() => setIsModal({ visible: true, value: { requestFormNo, memberNo: member.memberNo } })}
             />
           )}
-          {/* {status !== 'I' && requestType !== 'B' && <BaseButton label={'거래취소'} className={'btnW'} onClick={() => console.log('취소')} />} */}
-          {/* {requestType !== 'B' && status === 'B' && !dealStatus && ( */}
           {((['C'].includes(status) && ['A', 'B', 'C'].includes(dealStatus) && estimateReceiveYn === 'N') || ['B'].includes(status)) && (
             <BaseButton label={t('status.cancel')} className={'btnW'} onClick={() => handleCancel({ ...member, requestFormNo, status, dealStatus })} />
           )}
@@ -1003,7 +997,6 @@ const WorkerTransactionItem = ({
               <div className="btnArea">
                 <BaseButton className="btnW" label={t('version2_2.text162')} onClick={() => handleSkip(requestFormNo)} />
                 <BaseButton className="btnB" label={t('version2_2.text163')} onClick={() => handle3dCommunication(requestFormNo, requestType)} />
-                {/** <BaseButton className="btnB" label={'3D 뷰어 소통하기'} onClick={() => handle3d()} /> */}
               </div>
             )}
 
