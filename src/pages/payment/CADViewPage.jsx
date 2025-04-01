@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Pagenation, BaseInput, BaseSelect, BaseButton } from '@components/common';
+import { BaseButton } from '@components/common';
 import { RequestMiniInfo } from '@components/ui';
 import { getByteSize } from '@utils/common';
 import useCADViewPage from './hooks/useCADViewPage';
@@ -11,7 +11,8 @@ const CADViewPage = () => {
   const navigate = useNavigate();
   const { isLoading, error, items, isClick, handleReworkWrite, handleReviewWrite, user, isReceive, transfer, submitTransactionTransfer } = useCADViewPage();
   const { handleFileDownload } = useFileDownload();
-  // console.log(items)
+  console.log(items)
+
   const { t } = useTranslation();
   if (isLoading) return <></>;
   if (error) return <>{error}</>;

@@ -9,7 +9,9 @@ import { useTranslation } from 'react-i18next';
  * @returns
  */
 const RequestReceivePage = () => {
-  const { t } = useTranslation();
+  const { t,i18n } = useTranslation();
+
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   const navigate = useNavigate();
   const { state } = useLocation();
   const { isLoading, error, items } = useRequestReceivePage(state?.requestType);
@@ -60,7 +62,8 @@ const RequestReceivePage = () => {
                 textAlign: 'center'
               }}
             >
-              뒤로가기
+              {isEnglish ? 'Go back' : '뒤로가기'}
+
             </Link>
           </div>
         </div>
