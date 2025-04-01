@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput, BaseSelect, ModalAlertPresent, ModalPresent, BaseDatePicker } from '@components/common';
+import { BaseButton, BaseInput, BaseSelect, ModalAlertPresent, ModalPresent } from '@components/common';
 import { ConfirmModal, ReportModal, CancelModal, CancelCallModal } from '@components/ui';
 import React from 'react';
 import usePaymentPage from './hooks/usePaymentPage';
@@ -72,7 +72,6 @@ const PaymentPage = () => {
             <div className="listTit paymentCase">
               <BaseSelect items={stss} onChange={(e) => handleSearch('statusFilter', e.value)} />
               <div className={`${selectedDateType?.value === 'set' ? 'right sortingSet enCase' : 'right sortingSet'}`}>
-                {/* <div className="right sortingSet" */}
                 <span className="sArea">
                   <BaseSelect
                     items={tems}
@@ -126,15 +125,6 @@ const PaymentPage = () => {
         </ModalPresent>
       )}
 
-      {/* {isModal2 && (
-        <ModalPresent>
-          <CancelCallModal
-            onClose={() => {
-              setIsModal2(false);
-            }}
-          />
-        </ModalPresent>
-      )} */}
     </>
   );
 };

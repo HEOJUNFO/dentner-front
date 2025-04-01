@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React  from 'react';
 import TransactionItem from './TransactionItem';
 import WorkerTransactionItem from './WorkerTransactionItem';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
  */
 const TransactionHistory = ({ items, type, isDetail = true }) => {
   const { t } = useTranslation();
-  // console.log('TransactionHistory', type, items)
   return (
     <div className="paymentList">
       <ul>
@@ -18,8 +17,6 @@ const TransactionHistory = ({ items, type, isDetail = true }) => {
         {type === 'A' && items.map((item, idx) => <TransactionItem key={`TransactionItem__${idx}`} isDetail={isDetail} {...item} />)}
         {['B', 'C'].includes(type) && items.map((item, idx) => <WorkerTransactionItem key={`WorkerTransactionItem__${idx}`} isDetail={isDetail} {...item} />)}
 
-        {/* <li className='noList search'>검색 결과가 없습니다.</li>
-        <li className='noList'>등록된 목록이 없습니다.</li> */}
       </ul>
     </div>
   );
