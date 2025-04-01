@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNav, useSnack } from '@components/hooks';
+import { useEffect, useRef, useState } from 'react';
+import {  useSnack } from '@components/hooks';
 import { useTranslation } from 'react-i18next';
 import useWindowSize from '../../../components/hooks/useWindowSize';
 
@@ -31,13 +31,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
   const refLowerDirectInput = useRef();
 
   const handleChange = (name, value, error) => {
-    // console.log(name, value)
-    // if(name === 'code') {
-    //   setSelectedCode((prev) => ({
-    //     ...prev,
-    //     [name]: { ...prev[name], name: [value], success: value ? 1 : 0, error: error || '' },
-    //   }));
-    // }else {
     setSelectedCode((prev) => ({
       ...prev,
       [name]: { ...prev[name], name: value, success: value ? 1 : 0, error: error || '' },
@@ -79,9 +72,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
 
     if (refCodeDirectInput.current) {
       if (!refCodeDirectInput.current.value) {
-        // refCodeDirectInput.current.setError('This is an error');
-        // refCodeDirectInput.current.focus();
-
         showWarnSnackbar(t('version2_4.text123'));
         setCodeDirectInputError(true);
         return;
@@ -122,7 +112,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
 
   // 대분류 선택
   const handleUpperClick = (ucode) => {
-    // console.log('ucode', ucode);
     if (selectedCode.upperCode.value === ucode.teethTypeNo) {
       setSelectedCode({
         upperCode: { value: '', name: '' },
@@ -199,7 +188,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
   };
 
   const handleChecked = (e, ccode) => {
-    // e?.preventDefault();
 
     const value = ccode.teethTypeNo;
     const name = ccode.typeName;
@@ -292,7 +280,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
 
   useEffect(() => {
     if (activeIndex !== undefined) {
-      // console.log(params[activeIndex].teethType);
 
       if (params[activeIndex].teethType) {
         if (params[activeIndex].teethType) setSelectedCode(params[activeIndex].teethType);
@@ -309,7 +296,6 @@ export const useProstheticsType = ({ code, onClick, maxCnt, currCnt, activeIndex
         setIsEnd(false);
       }
 
-      // console.log(selectedCode);
     }
   }, [activeIndex]);
 
