@@ -1,12 +1,4 @@
-import { exact } from 'prop-types';
-import React, { ReactNode } from 'react';
-// export type route = {
-//   component?: ReactNode;
-//   layout?: ReactNode;
-//   name?: string;
-//   path?: string;
-//   routes?: route[];
-// };
+import React from 'react';
 
 const Sample = React.lazy(() => import('@pages/sample_page/SamplePage'));
 const ComponentPage = React.lazy(() => import('@pages/sample_page/ComponentPage'));

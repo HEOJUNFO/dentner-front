@@ -1,21 +1,20 @@
-import {Suspense, useEffect, useState} from 'react';
+import React, {Suspense, useEffect} from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast'; // Replace SnackbarProvider
 import '@utils/i18n';
 import { useTranslation, I18nextProvider } from 'react-i18next';
-//import './App.css'
 import routes from './router/routes';
-import Layout from './components/ui/layout/Layout';
 import PrivateRoute from '@components/routes/PrivateRoute';
 import { ScrollToTop, SuspenseLoading } from '@components/common';
 import useApp from './components/hooks/useApp';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import useScrollRestoration from '@components/hooks/useScrollRestoration';
-import Error500 from '@pages/error/Error500';
 import UserStore from '@store/UserStore'; // UserStore 추가
 import axios from '@api/config/axios'; // axios 추가
 
-import {requestPermissionAndGetToken, requestGetToken, onMessageListener} from '../firebase'
+import {requestGetToken, onMessageListener} from '../firebase'
+
+const Error500 = React.lazy(() => import('@pages/error/Error500'));
 
 function ScrollRestoration() {
   useScrollRestoration();
@@ -104,7 +103,13 @@ function App() {
   }, []);
 
   if (isLoading) return <SuspenseLoading />;
-  if (error) return <Error500 />;
+  if (error) {
+    return (
+      <Suspense fallback={<SuspenseLoading />}>
+        <Error500 />
+      </Suspense>
+    );
+  }
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
