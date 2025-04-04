@@ -142,12 +142,20 @@ export const useRequestDetailForm = () => {
 
   // 파일 중복 제거 함수 추가
   const removeDuplicateFiles = (fileList) => {
+    // fileList가 배열인지 확인하고, 아니면 빈 배열로 처리
+    const safeFileList = Array.isArray(fileList) ? fileList : [];
+    
     const uniqueFiles = [];
     const fileMap = new Map();
     
-    fileList.forEach(file => {
+    safeFileList.forEach(file => {
+      // 파일 객체가 유효한지 확인
+      if (!file) return;
+      
       // 파일 식별자로 이름과 크기 조합 사용
-      const fileKey = `${file.fileName}_${file.fileSize}`;
+      const fileName = file.fileName || file.name || '';
+      const fileSize = file.fileSize || file.size || 0;
+      const fileKey = `${fileName}_${fileSize}`;
       
       // 이미 처리된 파일이 아닌 경우에만 추가
       if (!fileMap.has(fileKey)) {
