@@ -1,4 +1,4 @@
-import { useNav, useSnack } from '@components/hooks';
+import { useSnack } from '@components/hooks';
 
 const useFileUpload = ({ fileList, setFileList, delFileList, setDelFileList, maxFile, fileTypes, maxSize }) => {
   const { showWarnSnackbar, showSnackbar } = useSnack();

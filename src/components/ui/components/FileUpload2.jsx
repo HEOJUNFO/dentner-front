@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import FileUploadSVG from '../../../svg/FileUploadSVG';
 import { useTranslation } from 'react-i18next';
-import useSnack from '../../hooks/useSnack';
+import useFileUpload from '@components/hooks/useFileUpload';
 
 const FileUpload2 = ({ 
   maxSize = 500, 
@@ -17,7 +17,17 @@ const FileUpload2 = ({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
-  const { showSnackbar, showWarnSnackbar } = useSnack();
+  
+  // Use the useFileUpload hook to handle file operations
+  const { handleAddFile, handleRemoveFile } = useFileUpload({ 
+    fileList, 
+    setFileList, 
+    delFileList, 
+    setDelFileList, 
+    maxFile, 
+    fileTypes, 
+    maxSize 
+  });
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -39,107 +49,13 @@ const FileUpload2 = ({
     }
   };
 
-  const readFile = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        resolve({
-          type: 'local',
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type,
-          source: reader.result,
-          file: file,
-        });
-      };
-      reader.onerror = reject;
-    });
-  };
-
-  const validateFiles = (files) => {
-    let validFiles = [];
-    
-    // Check if adding these files would exceed the max number of files
-    if (fileList.length + files.length > maxFile) {
-      const message = isEnglish 
-        ? `You can only upload a maximum of ${maxFile} files.` 
-        : `최대 ${maxFile}개의 파일만 업로드할 수 있습니다.`;
-      showWarnSnackbar(message);
-      return { validFiles, success: false };
-    }
-    
-    // Filter files by extension
-    validFiles = Array.from(files).filter(file => {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      return fileTypes.includes(fileExtension);
-    });
-
-    // Show warning if some files were filtered out
-    if (validFiles.length < files.length) {
-      const message = isEnglish
-        ? `Some files were removed because their format is not supported. Supported types: ${fileTypes.join(', ')}.`
-        : `일부 파일은 지원되지 않는 형식이어서 제외되었습니다. 지원되는 형식: ${fileTypes.join(', ')}.`;
-      showWarnSnackbar(message);
-      if (validFiles.length === 0) {
-        return { validFiles, success: false };
-      }
-    }
-    
-    // Check total size including existing files
-    const currentTotalSize = fileList.reduce((acc, file) => acc + (file.fileSize || 0), 0);
-    const newFilesTotalSize = validFiles.reduce((acc, file) => acc + file.size, 0);
-    
-    const maxSizeBytes = maxSize * 1024 * 1024;
-    if (currentTotalSize + newFilesTotalSize > maxSizeBytes) {
-      const message = isEnglish 
-        ? `Total size of all files exceeds the maximum size of ${maxSize}MB.`
-        : `모든 파일의 총 크기가 최대 크기 ${maxSize}MB를 초과합니다.`;
-      showWarnSnackbar(message);
-      return { validFiles: [], success: false };
-    }
-    
-    return { validFiles, success: true };
-  };
-
-  const handleFiles = async (files) => {
-    const { validFiles, success } = validateFiles(files);
-    
-    if (!success && validFiles.length === 0) {
-      return;
-    }
-    
-    try {
-      // Convert files to our data format with data URLs
-      const processedFiles = await Promise.all(validFiles.map(file => readFile(file)));
-      
-      // Add the valid files to the file list
-      const newFileList = [...fileList, ...processedFiles];
-      setFileList(newFileList);
-      
-      // Show success message if files were added
-      if (processedFiles.length > 0) {
-        const message = isEnglish 
-          ? `${processedFiles.length} file(s) added successfully.`
-          : `${processedFiles.length}개의 파일이 성공적으로 추가되었습니다.`;
-        showSnackbar(message);
-      }
-    } catch (error) {
-      console.error('Error reading files:', error);
-      const message = isEnglish 
-        ? 'Error reading files. Please try again.'
-        : '파일 읽기 오류. 다시 시도해 주세요.';
-      showWarnSnackbar(message);
-    }
-  };
-
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
+      handleAddFile(e.dataTransfer.files);
     }
   };
 
@@ -149,27 +65,8 @@ const FileUpload2 = ({
 
   const handleFileInputChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleFiles(e.target.files);
+      handleAddFile(e.target.files);
     }
-  };
-
-  const handleRemoveFile = (index) => {
-    const fileToRemove = fileList[index];
-    
-    // Handle server files that need to be tracked for deletion
-    if (fileToRemove.type === 'server' && setDelFileList) {
-      setDelFileList([...delFileList, fileToRemove.fileNo]);
-    }
-    
-    const newFiles = [...fileList];
-    newFiles.splice(index, 1);
-    setFileList(newFiles);
-    
-    // Show notification when file is removed
-    const message = isEnglish
-      ? `File "${fileToRemove.fileName || fileToRemove.name}" removed.`
-      : `파일 "${fileToRemove.fileName || fileToRemove.name}" 제거됨.`;
-    showSnackbar(message);
   };
 
   // Styles
