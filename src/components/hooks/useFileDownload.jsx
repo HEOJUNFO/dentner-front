@@ -286,6 +286,7 @@ const useFileDownload = () => {
 
   const handleFileZipDownloadEncrypt = async (e, fileType, fileNo) => {
     e.preventDefault();
+    console.log.log('파일다운로드테스트')
 
 let filename = '';
 if (fileType === 'A') {
@@ -314,7 +315,7 @@ if (fileType === 'A') {
 
 // 세션스토리지 대신 로컬스토리지에서 토큰 가져오기
 const token = localStorage.getItem('token');
-
+console.log(token)
 // 토큰이 없는 경우 처리
 if (!token) {
   console.log("로컬 스토리지에서 토큰을 찾을 수 없습니다");
@@ -332,6 +333,7 @@ fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/zip/encrypt/${
   },
 })
   .then(async (response) => {
+    console.log(response)
     if (!response.ok) {
       if (response.status === 400 || response.status === 401) {
         throw new Error('인증 토큰이 유효하지 않습니다. 다시 로그인해 주세요.');
