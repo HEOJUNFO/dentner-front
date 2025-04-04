@@ -272,7 +272,8 @@ const Chat = ({ target, items, roomMember, onFetch }) => {
     e.preventDefault();
 
     actions.setLoading(true);
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
+    
     //console.log(token,  fileNo)
     fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/chat/${fileNo}`, {
       method: 'POST',

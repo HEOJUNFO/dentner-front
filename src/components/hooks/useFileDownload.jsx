@@ -1,4 +1,3 @@
-import { fileDownload, fileZipDownload, fileDownloadEncrypt, fileZipDownloadEncrypt } from '../../api/Common';
 import ModalStore from '@store/ModalStore';
 
 const useFileDownload = () => {
@@ -13,7 +12,7 @@ const useFileDownload = () => {
     e.preventDefault();
 
     actions.setLoading(true);
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/${fileNo}`, {
       method: 'POST',
@@ -71,23 +70,6 @@ const useFileDownload = () => {
         actions.setLoading(false);
         //actions.setReceived(0);
       });
-
-    // await fileDownload(fileNo)
-    //   .then((response) => {
-    //     console.log(response.data.type, '', response.headers['content-type']);
-    //     const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/zip' }));
-    //     const link = document.createElement('a');
-    //     link.href = url;
-    //     link.setAttribute('download', `${fileName}`);
-    //     document.body.appendChild(link);
-    //     link.click();
-
-    //     document.body.removeChild(link);
-    //     window.URL.revokeObjectURL(url);
-    //   })
-    //   .catch((error) => {
-    //     console.error('There was a problem with your fetch operation:', error);
-    //   });
   };
 
   /**
@@ -262,7 +244,7 @@ const useFileDownload = () => {
     } else if (fileType === 'K') {
       filename = `재제작_${fileNo}`;
     }
-    const token = sessionStorage.getItem('token');
+    const token = localStorage.getItem('token');
 
     actions.setLoading(true);
     fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/zip/${fileType}/${fileNo}`, {
@@ -427,8 +409,6 @@ fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/zip/encrypt/${
   });
 
   };
-
-  const fetchInstance = () => {};
 
   return { handleFileDownload, handleFileZipDownload, handleFileDownloadEncrypt, handleFileZipDownloadEncrypt };
 };
