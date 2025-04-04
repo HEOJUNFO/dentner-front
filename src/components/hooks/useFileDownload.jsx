@@ -98,10 +98,31 @@ const useFileDownload = () => {
    */
   const handleFileDownloadEncrypt = async (e, fileNo, fileName) => {
     e.preventDefault();
+    console.log('=== 파일 다운로드 시작 ===');
+    console.log('파일번호:', fileNo);
+    console.log('파일이름:', fileName);
+    
     // actions.setLoading(true);
     try {
-      const token = sessionStorage.getItem('token');
-
+      // 세션스토리지 대신 로컬스토리지에서 토큰 가져오기
+      const token = localStorage.getItem('token');
+      console.log('토큰 존재 여부:', !!token);
+      
+      // 토큰 첫 10자만 로그 (보안을 위해 전체 토큰은 출력하지 않음)
+      if (token) {
+        console.log('토큰 일부:', token.substring(0, 10) + '...');
+        console.log('토큰 길이:', token.length);
+        
+        // JWT 토큰 구조 확인 (점으로 구분된 3개 부분이어야 함)
+        const tokenParts = token.split('.');
+        console.log('토큰 구조 유효성:', tokenParts.length === 3 ? '유효' : '유효하지 않음');
+      } else {
+        console.error('토큰이 없습니다!');
+        return;
+      }
+  
+      console.log('API 요청 URL:', `${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/encrypt/${fileNo}`);
+      
       fetch(`${import.meta.env.VITE_API_URL_SUB}/api/v1/common/download/encrypt/${fileNo}`, {
         method: 'POST',
         headers: {
@@ -110,73 +131,104 @@ const useFileDownload = () => {
         },
       })
         .then(async (response) => {
+          console.log('응답 상태:', response.status);
+          console.log('응답 OK 여부:', response.ok);
+          
           if (!response.ok) {
+            console.error('응답 에러:', response.status, response.statusText);
+            
+            // 응답 본문 확인 시도
+            try {
+              const errorText = await response.text();
+              console.error('에러 응답 본문:', errorText);
+            } catch (err) {
+              console.error('에러 응답 본문을 읽을 수 없음');
+            }
+            
+            if (response.status === 400 || response.status === 401) {
+              throw new Error('인증 토큰이 유효하지 않습니다. 다시 로그인해 주세요.');
+            }
             throw new Error('파일 다운로드 실패');
           }
-
+  
+          console.log('응답 헤더:', {
+            contentType: response.headers.get('Content-Type'),
+            contentLength: response.headers.get('Content-Length'),
+          });
+  
           // 스트림을 읽기 위한 리더
           const reader = response.body.getReader();
           const contentLength = +response.headers.get('Content-Length') || 0;
-
+          console.log('파일 크기:', contentLength, 'bytes');
+  
           // 다운로드 진행 상황을 추적하기 위한 변수
           let receivedLength = 0;
           const chunks = []; // 다운로드한 데이터를 저장할 배열
-
+          console.log('다운로드 시작...');
+  
           while (true) {
             const { done, value } = await reader.read();
-            if (done) break;
-
+            if (done) {
+              console.log('다운로드 완료!');
+              break;
+            }
+  
             chunks.push(value);
             receivedLength += value.length;
-
-            // 진행률 업데이트 (여기서는 예시로 콘솔에 출력)
+  
+            // 진행률 업데이트 (25%, 50%, 75%, 100%에서만 로그 출력)
             if (contentLength) {
-              // console.log(`Received ${(receivedLength / contentLength) * 100}%`);
+              const percent = Math.round((receivedLength / contentLength) * 100);
+              if (percent % 25 === 0) {
+                console.log(`다운로드 진행률: ${percent}%`);
+              }
               //actions.setReceived(Math.round((receivedLength / contentLength) * 100));
             }
           }
-
+  
+          console.log('데이터 청크 수:', chunks.length);
+          console.log('받은 총 데이터 크기:', receivedLength, 'bytes');
+  
           // 모든 청크를 하나의 Uint8Array로 결합
           const blob = new Blob(chunks, { type: 'application/octet-stream' });
-
+          console.log('Blob 생성 완료:', blob.size, 'bytes');
+  
           // 다운로드 링크 생성 및 클릭
           const url = window.URL.createObjectURL(blob);
+          console.log('Blob URL 생성:', url);
+          
           const link = document.createElement('a');
           link.href = url;
           link.setAttribute('download', `${fileName}`);
           document.body.appendChild(link);
+          console.log('다운로드 링크 생성 완료, 클릭 시도...');
           link.click();
-
+          console.log('다운로드 시작됨');
+  
           // 메모리 해제
           window.URL.revokeObjectURL(url);
           document.body.removeChild(link);
+          console.log('리소스 정리 완료');
         })
         .catch((error) => {
           console.error('파일 다운로드 오류:', error);
+          console.error('에러 메시지:', error.message);
+          console.error('에러 스택:', error.stack);
+          alert(error.message || '파일 다운로드 중 오류가 발생했습니다.');
         })
         .finally(() => {
+          console.log('=== 파일 다운로드 프로세스 종료 ===');
           // actions.setLoading(false);
           //actions.setReceived(0);
         });
-
-      // await fileDownloadEncrypt(fileNo)
-      //   .then((response) => {
-      //     console.log(response.data.type, '', response.headers['content-type']);
-      //     const url = window.URL.createObjectURL(new Blob([response.data], { type: response.data.type }));
-      //     const link = document.createElement('a');
-      //     link.href = url;
-      //     link.setAttribute('download', `${fileName}`);
-      //     document.body.appendChild(link);
-      //     link.click();
-      //   })
-      //   .catch((error) => {
-      //     console.error('There was a problem with your fetch operation:', error);
-      //   });
+  
     } catch (e) {
-      console.log(e);
+      console.error('전체 다운로드 프로세스 오류:', e);
+      console.error('오류 메시지:', e.message);
+      console.error('오류 스택:', e.stack);
+      alert('파일 다운로드 중 예기치 않은 오류가 발생했습니다.');
     }
   };
-
   /**
    *
    * @param {*} e
@@ -269,19 +321,6 @@ const useFileDownload = () => {
         actions.setLoading(false);
         //actions.setReceived(0);
       });
-
-    // await fileZipDownload({ fileType, fileNo })
-    //   .then((response) => {
-    //     const url = window.URL.createObjectURL(new Blob([response.data], { type: response.data.type }));
-    //     const link = document.createElement('a');
-    //     link.href = url;
-    //     link.setAttribute('download', `${filename}.zip`);
-    //     document.body.appendChild(link);
-    //     link.click();
-    //   })
-    //   .catch((error) => {
-    //     console.error('There was a problem with your fetch operation:', error);
-    //   });
   };
 
   const handleFileZipDownloadEncrypt = async (e, fileType, fileNo) => {
