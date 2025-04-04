@@ -1602,6 +1602,7 @@ p.guide {
   color: #e90000;
 }
 .searchSet {
+  min-width: 40% !important;
   position: relative;
   display: inline-block;
 }

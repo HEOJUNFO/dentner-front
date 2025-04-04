@@ -363,7 +363,6 @@ const FileUpload2 = ({
                   <div style={fileNameStyle}>{file.fileName || file.name}</div>
                   <div style={fileSizeStyle}>
                     {((file.fileSize || file.size) / (1024 * 1024)).toFixed(2)} mb
-                    {file.type === 'server' && ` (${isEnglish ? 'Server File' : '서버 파일'})`}
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { BaseButton, BaseInput } from '@components/common';
 import { Designer, TableSorting, WrapListBox, TableSortingM } from '@components/ui';
-import React, { useTransition } from 'react';
+import React from 'react';
 
 import { ModalAlertPresent, ModalPresent } from '@components/common';
 import BlockAlert from '../../components/ui/modal/BlockAlert';
@@ -68,7 +68,6 @@ const DesignerPage = () => {
         <WrapListBox>
           <div className="listTit searchChoice">
             <h3>{t('disigner.total')}</h3>
-            {/* <TableSorting items={sortingItems} defaultValue={sortType} onChange={handleSortingChange} eventType="click" /> */}
             {isMobile ? (
               <TableSortingM items={sortingItems} defaultValue={sortType} onChange={handleSortingChange} button={true} buttonTitle={'관심 치자이너'} buttonPosition={{ bottom: -5 }} />
             ) : (
