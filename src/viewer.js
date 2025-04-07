@@ -16,6 +16,9 @@ let meshGroup = null;
 let material;
 let modelData = window.threeDViewerData || null;
 
+// Model tracking with file numbers
+let modelMap = new Map(); // Maps fileNo to model index in meshes array
+
 let annotations = [];
 let annotationMarkers = [];
 let selectedAnnotation = null;
@@ -95,61 +98,64 @@ function hideLoadingAnimation() {
 // ========================================================
 
 function fitCameraToMeshes() {
-    if (!meshGroup || meshes.length === 0) return;
-    
-    const boundingBox = new THREE.Box3();
-    
-    meshes.forEach(mesh => {
+  if (!meshGroup || meshes.length === 0) return;
+  
+  const boundingBox = new THREE.Box3();
+  
+  meshes.forEach(mesh => {
       if (!mesh.geometry.boundingBox) {
-        mesh.geometry.computeBoundingBox();
+          mesh.geometry.computeBoundingBox();
       }
       const meshBounds = new THREE.Box3().copy(mesh.geometry.boundingBox);
       meshBounds.applyMatrix4(mesh.matrixWorld);
       boundingBox.union(meshBounds);
-    });
-    
-    const center = new THREE.Vector3();
-    boundingBox.getCenter(center);
-    const size = new THREE.Vector3();
-    boundingBox.getSize(size);
-    
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const fov = camera.fov * (Math.PI / 180);
-    
-    let distance = Math.abs(maxDim / Math.sin(fov / 2));
-    
-    distance *= 0.6;
-    
-    const direction = new THREE.Vector3(0, 1, 0).normalize();
-    camera.position.copy(center).add(direction.multiplyScalar(distance));
-    
-    camera.lookAt(center);
-    
-    camera.up.set(0, 0, 1);
-    
-    camera.near = distance / 100;
-    camera.far = distance * 100;
-    camera.updateProjectionMatrix();
-    
-    controls.target.copy(center);
-    
-    controls.rotateSpeed = 3.0;
-    controls.zoomSpeed = 1.2;
-    controls.panSpeed = 0.8;
-    controls.noPan = false;
-    controls.noZoom = false;
-    controls.noRotate = false;
-    controls.staticMoving = true;
-    controls.dynamicDampingFactor = 0.3;
-
-    if (controls.up) {
-        controls.up.copy(camera.up);
-    }
-    
-    controls.update();
+  });
+  
+  const center = new THREE.Vector3();
+  boundingBox.getCenter(center);
+  const size = new THREE.Vector3();
+  boundingBox.getSize(size);
+  
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fov = camera.fov * (Math.PI / 180);
+  
+  let distance = Math.abs(maxDim / Math.sin(fov / 2));
+  
+  // 모바일 여부를 판단하여, 모바일이면 1.2, 아니면 0.6을 곱합니다.
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  distance *= isMobile ? 1.2 : 0.6;
+  
+  const direction = new THREE.Vector3(0, 1, 0).normalize();
+  camera.position.copy(center).add(direction.multiplyScalar(distance));
+  
+  camera.lookAt(center);
+  
+  camera.up.set(0, 0, 1);
+  
+  camera.near = distance / 100;
+  camera.far = distance * 100;
+  camera.updateProjectionMatrix();
+  
+  controls.target.copy(center);
+  
+  controls.rotateSpeed = 3.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+  controls.noPan = false;
+  controls.noZoom = false;
+  controls.noRotate = false;
+  controls.staticMoving = true;
+  controls.dynamicDampingFactor = 0.3;
+  
+  if (controls.up) {
+      controls.up.copy(camera.up);
+  }
+  
+  controls.update();
 }
 
-function addMeshFromGeometry(geometry) {
+
+function addMeshFromGeometry(geometry, fileNo) {
   geometry.computeBoundingSphere();
   
   geometry.deleteAttribute('uv');
@@ -162,11 +168,20 @@ function addMeshFromGeometry(geometry) {
   const meshMaterial = new THREE.MeshMatcapMaterial({
     flatShading: false,
     side: THREE.DoubleSide,
-    matcap: matcaps[params.matcap]
+    matcap: matcaps[params.matcap],
+    transparent: true,
+    opacity: 1.0
   });
   
   const newMesh = new THREE.Mesh(geometry, meshMaterial);
+  const meshIndex = meshes.length;
   meshes.push(newMesh);
+  
+  // Store the mesh index for this file number
+  if (fileNo) {
+    modelMap.set(fileNo, meshIndex);
+    newMesh.userData.fileNo = fileNo;
+  }
   
   return newMesh;
 }
@@ -199,6 +214,7 @@ function clearAllMeshes() {
   
   meshes = [];
   meshGroup = null;
+  modelMap.clear();
   
   clearAllAnnotations();
 }
@@ -223,7 +239,7 @@ function clearAllAnnotations() {
   }
 }
 
-function processSTLFile(arrayBuffer, filename = '') {
+function processSTLFile(arrayBuffer, filename = '', fileNo = null) {
   try {
     const geometry = stlLoader.parse(arrayBuffer);
     const positionAttr = geometry.getAttribute('position');
@@ -243,7 +259,7 @@ function processSTLFile(arrayBuffer, filename = '') {
     newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     newGeometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
     
-    return addMeshFromGeometry(newGeometry);
+    return addMeshFromGeometry(newGeometry, fileNo);
   } catch (error) {
     console.error('Error processing STL file:', filename, error);
     return null;
@@ -277,6 +293,34 @@ async function processZipFile(arrayBuffer) {
     arrangeMeshes();
   } catch (error) {
     console.error('Error processing ZIP file:', error);
+  }
+}
+
+// Set model transparency function
+function setModelTransparency(fileNo, opacity) {
+  if (modelMap.has(fileNo)) {
+    const meshIndex = modelMap.get(fileNo);
+    if (meshIndex >= 0 && meshIndex < meshes.length) {
+      const mesh = meshes[meshIndex];
+      if (mesh && mesh.material) {
+        mesh.material.transparent = opacity < 0.99;
+        mesh.material.opacity = opacity;
+        mesh.material.needsUpdate = true;
+      }
+    }
+  }
+}
+
+// Set model visibility function
+function setModelVisibility(fileNo, visible) {
+  if (modelMap.has(fileNo)) {
+    const meshIndex = modelMap.get(fileNo);
+    if (meshIndex >= 0 && meshIndex < meshes.length) {
+      const mesh = meshes[meshIndex];
+      if (mesh) {
+        mesh.visible = visible;
+      }
+    }
   }
 }
 
@@ -982,7 +1026,11 @@ async function loadModelsFromUrls(fileList) {
         }
         
         const arrayBuffer = await response.arrayBuffer();
-        const mesh = processSTLFile(arrayBuffer, fileInfo.threeFileRealName || `model_${index}.stl`);
+        const mesh = processSTLFile(
+          arrayBuffer, 
+          fileInfo.threeFileRealName || `model_${index}.stl`,
+          fileInfo.threeFileNo
+        );
         
         return mesh;
       } catch (error) {
@@ -1062,5 +1110,7 @@ export {
   getAnnotations,
   addExistingAnnotation,
   updateAnnotationId,
-  focusOnAnnotation
+  focusOnAnnotation,
+  setModelTransparency,
+  setModelVisibility
 };

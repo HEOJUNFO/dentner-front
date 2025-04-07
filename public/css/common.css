@@ -2146,10 +2146,15 @@ p.guide {
 }
 .popDim .basicPop,
 .alertDim .alertPop,
-.popFDim .fullPop,
+
 .calUnit .mTimeChoice .basicPop {
   position: relative;
   border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  background: var(--white-color);
+}
+.popFDim .fullPop{
+  position: relative;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   background: var(--white-color);
 }
@@ -2198,7 +2203,7 @@ p.guide {
 }
 /* ===== Dim이 포함된 기본 팝업  ===== */
 .popFDim {
-  padding: 0px 5px;
+  padding: 0px 0px;
 }
 .fullPop {
   text-align: left;
@@ -2206,7 +2211,7 @@ p.guide {
 }
 .fullPop .btnPClose {
   right: 25px;
-  top: 25px;
+  top: 12px;
 }
 /* ===== 스낵바 (토스트 팝업)  ===== */
 [class*='Snackbar_snackbar-wrapper_'] {

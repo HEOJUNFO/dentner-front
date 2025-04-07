@@ -96,7 +96,6 @@ export const getTransactions = async ({ requestFormSe, params }) => {
 
     // 응답 데이터의 정확한 구조에 맞게 접근
     if (response.data && response.data.data && response.data.data.list && Array.isArray(response.data.data.list)) {
-      console.log('dd');
       response.data.data.list = response.data.data.list.map(item => {
         const statusName = item.requestStatusName || '';
         const mapping = statusNameMapping[statusName] || {
