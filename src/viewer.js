@@ -871,11 +871,12 @@ function init() {
     }
   };
   
-  textureLoader.load('/src/textures/B67F6B_4B2E2A_6C3A34_F3DBC6-256px.png', (texture) => {
+  textureLoader.load('https://raw.githubusercontent.com/HEOJUNFO/blockout/main/textures/B67F6B_4B2E2A_6C3A34_F3DBC6-256px.png', (texture) => {
     matcaps['Clay'] = texture;
     updateMaterials();
     onTextureLoaded();
   }, undefined, (error) => console.error('Texture loading error:', error));
+  
   
   material = new THREE.MeshMatcapMaterial({
     flatShading: false,
