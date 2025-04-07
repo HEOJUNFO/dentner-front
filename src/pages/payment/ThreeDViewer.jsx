@@ -262,11 +262,15 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
             // If neither has updateDt, compare registerDt
             else return new Date(b.registerDt) - new Date(a.registerDt);
           });
+
+          const nonDeletedMemos = sortedGroup.filter(memo => 
+            !(memo.threeMemo && memo.threeMemo.startsWith('!del!'))
+          );
           
-          // If there are any non-deleted memos, add the most recent one
           if (nonDeletedMemos.length > 0) {
             filteredMemos.push(nonDeletedMemos[0]);
           }
+          
         });
         
         console.log('Filtered to most recent non-deleted memos only:', filteredMemos);
