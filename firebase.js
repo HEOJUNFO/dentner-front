@@ -24,9 +24,6 @@ if (typeof window !== 'undefined' && typeof window.navigator !== 'undefined') {
   }
 }
 
-console.log('1919191919191919')
-
-
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
 
