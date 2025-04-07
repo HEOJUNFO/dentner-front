@@ -17,6 +17,7 @@ const RequestAddOrderPaymentViewPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isLoading, error, data, id } = useRequestAddOrderPaymentViewPage();
+  console.log(data)
 
   const { handleFileDownload, handleFileZipDownload, handleFileDownloadEncrypt, handleFileZipDownloadEncrypt } = useFileDownload();
 
@@ -70,7 +71,7 @@ const RequestAddOrderPaymentViewPage = () => {
                     })}
                   </ul>
                   <div className="allDownload">
-                    <BaseButton label={t('version2_2.text117')} className={'btnG'} onClick={(e) => handleFileZipDownload(e, 'K', data?.requestFormRemakingNo)} />
+                    <BaseButton label={t('version2_2.text117')} className={'btnG'} onClick={(e) => handleFileZipDownload(e, 'K', data?.requestFormNo)} />
                   </div>
                 </div>
               </div>
