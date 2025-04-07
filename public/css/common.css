@@ -2198,7 +2198,7 @@ p.guide {
 }
 /* ===== Dim이 포함된 기본 팝업  ===== */
 .popFDim {
-  padding: 50px 50px;
+  padding: 0px 5px;
 }
 .fullPop {
   text-align: left;

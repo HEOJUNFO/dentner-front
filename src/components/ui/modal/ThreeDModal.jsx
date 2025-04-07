@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BaseButton, BaseInput } from '@components/common';
-import { FileUpload } from '@components/ui';
+import { BaseButton } from '@components/common';
 import { useSnack } from '@components/hooks';
-import ModalStore from '@store/ModalStore';
 import { get3dMemo, post3dMemo } from '@api/Payment';
-import { replaceToBr, withCommas, strToLength } from '@utils/common';
 import R3DViewer from '@components/r3dview/R3DViewer';
 
 const ThreeDModal = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }) => {

@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { getTransactions, get3d, delete3d, post3dAlarmTalk } from '@api/Payment';
 import { useNav, useSnack } from '@components/hooks';
 import UserStore from '@store/UserStore';
@@ -64,7 +63,6 @@ const useCADCommsPage = () => {
       fetch3d();
       setAllChecked(false);
     }
-    // console.log(r);
   };
 
   // 3d 뷰어
@@ -109,37 +107,6 @@ const useCADCommsPage = () => {
     }
   };
 
-  // const handleConfirmModal = () => {
-  //   setIsConfirmModal({
-  //     visible: true,
-  //     value: {
-  //       title: '3D 뷰어 소통 종료',
-  //       doneContents: '3D 뷰어 소통이 종료 되었습니다.',
-  //       failContents: '뷰어 종료 오류',
-  //       contents: '3D 뷰어 소통 종료 후\n CAD파일 업로드하시겠습니까?',
-  //       btnCancel: '취소',
-  //       btnConfirm: '확인',
-  //       onConfirm: async () => await handleNext(),
-  //       onDone: () => handleNav(`/payment/reqeust/${requestFormNo}/cad`),
-  //     },
-  //   });
-  // };
-
-  // // 3D 소통 종료
-  // const handleNext = async () => {
-  //   try {
-  //     const r = await putDeal({ requestFormNo: id, state: 'E' });
-  //     const { data } = r;
-  //     if (Number(data) === 1) {
-  //       return true;
-  //     } else {
-  //       return false;
-  //     }
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // };
-
   const handelUpload = () => {
     if (items.length > 4) {
       showWarnSnackbar('최대 5개까지 가능합니다. 기존 데이터를 삭제 후 진행해주세요.');
@@ -172,7 +139,6 @@ const useCADCommsPage = () => {
     handleCheck,
     checkedItems,
     handleRemove,
-    // handleConfirmModal,
     isConfirmModal,
     setIsConfirmModal,
     handleAllCheck,
