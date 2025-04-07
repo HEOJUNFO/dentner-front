@@ -4,7 +4,7 @@ import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { acceleratedRaycast, computeBoundsTree, disposeBoundsTree } from 'three-mesh-bvh';
-import JSZip from 'jszip'; 
+import JSZip from 'jszip';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
@@ -16,20 +16,17 @@ let meshGroup = null;
 let material;
 let modelData = window.threeDViewerData || null;
 
-// Model tracking with file numbers
-let modelMap = new Map(); // Maps fileNo to model index in meshes array
+let modelMap = new Map();
 
 let annotations = [];
 let annotationMarkers = [];
 let selectedAnnotation = null;
-// 항상 메모모드 활성화
 let isAnnotationMode = true;
 let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 let tempMarker = null;
 let onAnnotationSelect = null;
 let onAnnotationAdd = null;
-// 가장 최근에 추가된 메모의 인덱스를 추적하는 변수 추가
 let lastAddedAnnotationIndex = null;
 
 const params = {
@@ -38,13 +35,12 @@ const params = {
 
 const matcaps = {};
 const colorPalette = [
-  '#F9E4C8', '#FAF0D1', '#FFFFE0', '#FDE8D0', '#FFFAF0', 
+  '#F9E4C8', '#FAF0D1', '#FFFFE0', '#FDE8D0', '#FFFAF0',
   '#EDE6DB', '#D3D3C3', '#D8D8D8', '#F2F2F5', '#F3E5AB'
 ];
 
 const stlLoader = new STLLoader();
 
-// ===== 로딩 애니메이션 관련 함수 및 스타일 추가 =====
 function addSpinnerStyle() {
   if (document.getElementById('spinner-style')) return;
   const style = document.createElement('style');
@@ -95,7 +91,6 @@ function hideLoadingAnimation() {
     loadingDiv.style.display = "none";
   }
 }
-// ========================================================
 
 function fitCameraToMeshes() {
   if (!meshGroup || meshes.length === 0) return;
@@ -103,12 +98,12 @@ function fitCameraToMeshes() {
   const boundingBox = new THREE.Box3();
   
   meshes.forEach(mesh => {
-      if (!mesh.geometry.boundingBox) {
-          mesh.geometry.computeBoundingBox();
-      }
-      const meshBounds = new THREE.Box3().copy(mesh.geometry.boundingBox);
-      meshBounds.applyMatrix4(mesh.matrixWorld);
-      boundingBox.union(meshBounds);
+    if (!mesh.geometry.boundingBox) {
+      mesh.geometry.computeBoundingBox();
+    }
+    const meshBounds = new THREE.Box3().copy(mesh.geometry.boundingBox);
+    meshBounds.applyMatrix4(mesh.matrixWorld);
+    boundingBox.union(meshBounds);
   });
   
   const center = new THREE.Vector3();
@@ -121,7 +116,6 @@ function fitCameraToMeshes() {
   
   let distance = Math.abs(maxDim / Math.sin(fov / 2));
   
-  // 모바일 여부를 판단하여, 모바일이면 1.2, 아니면 0.6을 곱합니다.
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   distance *= isMobile ? 1.2 : 0.6;
   
@@ -148,12 +142,11 @@ function fitCameraToMeshes() {
   controls.dynamicDampingFactor = 0.3;
   
   if (controls.up) {
-      controls.up.copy(camera.up);
+    controls.up.copy(camera.up);
   }
   
   controls.update();
 }
-
 
 function addMeshFromGeometry(geometry, fileNo) {
   geometry.computeBoundingSphere();
@@ -177,7 +170,6 @@ function addMeshFromGeometry(geometry, fileNo) {
   const meshIndex = meshes.length;
   meshes.push(newMesh);
   
-  // Store the mesh index for this file number
   if (fileNo) {
     modelMap.set(fileNo, meshIndex);
     newMesh.userData.fileNo = fileNo;
@@ -229,7 +221,7 @@ function clearAllAnnotations() {
   annotations = [];
   annotationMarkers = [];
   selectedAnnotation = null;
-  lastAddedAnnotationIndex = null; // 이 변수도 초기화
+  lastAddedAnnotationIndex = null;
   
   if (tempMarker) {
     scene.remove(tempMarker);
@@ -296,7 +288,6 @@ async function processZipFile(arrayBuffer) {
   }
 }
 
-// Set model transparency function
 function setModelTransparency(fileNo, opacity) {
   if (modelMap.has(fileNo)) {
     const meshIndex = modelMap.get(fileNo);
@@ -311,7 +302,6 @@ function setModelTransparency(fileNo, opacity) {
   }
 }
 
-// Set model visibility function
 function setModelVisibility(fileNo, visible) {
   if (modelMap.has(fileNo)) {
     const meshIndex = modelMap.get(fileNo);
@@ -325,83 +315,82 @@ function setModelVisibility(fileNo, visible) {
 }
 
 function createAnnotationMarker(position, index) {
-    const markerGroup = new THREE.Group();
-    markerGroup.position.copy(position);
-    markerGroup.userData.annotationIndex = index;
-    
-    const markerGeometry = new THREE.SphereGeometry(0.48, 24, 24);
-    const markerMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0xFF4500, 
-      transparent: true,
-      opacity: 0.9,
-      depthTest: false
-    });
-    
-    const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-    markerGroup.add(marker);
-    
-    const ringGeometry = new THREE.RingGeometry(0.60, 0.84, 32);
-    const ringMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0xFFFF00, 
-      transparent: true,
-      opacity: 0.7,
-      side: THREE.DoubleSide,
-      depthTest: false
-    });
-    
-    const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-    ring.rotation.x = Math.PI / 2;
-    markerGroup.add(ring);
-    
-    ring.userData.animation = {
-      pulse: 0,
-      speed: 2
-    };
-    
-    if (!window.annotationAnimations) {
-      window.annotationAnimations = [];
-    }
-    window.annotationAnimations.push(ring);
-      
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'white';
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 18;
-    ctx.font = 'bold 160px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.strokeText(index + 1, 128, 128);
-    ctx.fillText(index + 1, 128, 128);
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    const labelGeometry = new THREE.PlaneGeometry(0.84, 0.84);
-    const labelMaterial = new THREE.MeshBasicMaterial({ 
-      map: texture,
-      transparent: true,
-      depthTest: false,
-      side: THREE.DoubleSide
-    });
-    
-    const label = new THREE.Mesh(labelGeometry, labelMaterial);
-    label.position.set(0, 0.90, 0);
-    
-    label.userData.isBillboard = true;
-    
-    markerGroup.add(label);
-    
-    markerGroup.userData.isOccluded = false;
-    
-    return markerGroup;
+  const markerGroup = new THREE.Group();
+  markerGroup.position.copy(position);
+  markerGroup.userData.annotationIndex = index;
+  
+  const markerGeometry = new THREE.SphereGeometry(0.48, 24, 24);
+  const markerMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xFF4500, 
+    transparent: true,
+    opacity: 0.9,
+    depthTest: false
+  });
+  
+  const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+  markerGroup.add(marker);
+  
+  const ringGeometry = new THREE.RingGeometry(0.60, 0.84, 32);
+  const ringMaterial = new THREE.MeshBasicMaterial({ 
+    color: 0xFFFF00, 
+    transparent: true,
+    opacity: 0.7,
+    side: THREE.DoubleSide,
+    depthTest: false
+  });
+  
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.rotation.x = Math.PI / 2;
+  markerGroup.add(ring);
+  
+  ring.userData.animation = {
+    pulse: 0,
+    speed: 2
+  };
+  
+  if (!window.annotationAnimations) {
+    window.annotationAnimations = [];
+  }
+  window.annotationAnimations.push(ring);
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 18;
+  ctx.font = 'bold 160px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeText(index + 1, 128, 128);
+  ctx.fillText(index + 1, 128, 128);
+  
+  const texture = new THREE.CanvasTexture(canvas);
+  const labelGeometry = new THREE.PlaneGeometry(0.84, 0.84);
+  const labelMaterial = new THREE.MeshBasicMaterial({ 
+    map: texture,
+    transparent: true,
+    depthTest: false,
+    side: THREE.DoubleSide
+  });
+  
+  const label = new THREE.Mesh(labelGeometry, labelMaterial);
+  label.position.set(0, 0.90, 0);
+  
+  label.userData.isBillboard = true;
+  
+  markerGroup.add(label);
+  
+  markerGroup.userData.isOccluded = false;
+  
+  return markerGroup;
 }
 
-// Modified to accept an optional ID parameter
 function addAnnotation(position, text, id = null) {
   const index = annotations.length;
   const annotation = {
-    id: id || Date.now(), // Use provided ID or timestamp
+    id: id || Date.now(),
     position: position.clone(),
     text: text,
     createdAt: new Date()
@@ -415,7 +404,6 @@ function addAnnotation(position, text, id = null) {
   
   createClickAnimation(position);
   
-  // 가장 최근에 추가된 메모의 인덱스 저장
   lastAddedAnnotationIndex = index;
   
   if (onAnnotationAdd && typeof onAnnotationAdd === 'function') {
@@ -425,10 +413,8 @@ function addAnnotation(position, text, id = null) {
   return annotation;
 }
 
-// NEW: Function to add an existing annotation loaded from the server
 function addExistingAnnotation(annotation) {
   try {
-    // Handle different position formats safely
     let positionVector;
     
     if (!annotation.position) {
@@ -436,21 +422,18 @@ function addExistingAnnotation(annotation) {
       return null;
     }
     
-    // Create a THREE.Vector3 from the position if it's not already
     if (annotation.position instanceof THREE.Vector3) {
       positionVector = annotation.position.clone();
     } else {
-      // Make sure we have numeric values for position
       const x = parseFloat(annotation.position.x) || 0;
       const y = parseFloat(annotation.position.y) || 0;
       const z = parseFloat(annotation.position.z) || 0;
       positionVector = new THREE.Vector3(x, y, z);
     }
     
-    // Create the annotation in the viewer
     const index = annotations.length;
     const newAnnotation = {
-      id: annotation.id, // Use the server ID
+      id: annotation.id,
       position: positionVector,
       text: annotation.text || '',
       createdAt: annotation.createdAt ? new Date(annotation.createdAt) : new Date(),
@@ -460,7 +443,6 @@ function addExistingAnnotation(annotation) {
     
     annotations.push(newAnnotation);
     
-    // Create and add the marker
     const marker = createAnnotationMarker(positionVector, index);
     scene.add(marker);
     annotationMarkers.push(marker);
@@ -472,7 +454,6 @@ function addExistingAnnotation(annotation) {
   }
 }
 
-// NEW: Function to update an annotation's ID after saving to server
 function updateAnnotationId(index, newId) {
   if (index >= 0 && index < annotations.length) {
     annotations[index].id = newId;
@@ -523,7 +504,6 @@ function updateAnnotation(index, text) {
     annotations[index].text = text;
     annotations[index].updatedAt = new Date();
     
-    // 메모가 저장되면(텍스트가 있으면) 최근 추가된 메모 인덱스 초기화
     if (index === lastAddedAnnotationIndex && text !== "") {
       lastAddedAnnotationIndex = null;
     }
@@ -542,7 +522,6 @@ function deleteAnnotation(index) {
     annotations.splice(index, 1);
     annotationMarkers.splice(index, 1);
     
-    // lastAddedAnnotationIndex 업데이트
     if (lastAddedAnnotationIndex === index) {
       lastAddedAnnotationIndex = null;
     } else if (lastAddedAnnotationIndex > index) {
@@ -553,7 +532,7 @@ function deleteAnnotation(index) {
       marker.userData.annotationIndex = i;
       
       if (marker.children.length > 2) {
-        const label = marker.children[2]; // 라벨은 세번째 자식 요소
+        const label = marker.children[2];
         if (label) {
           const canvas = document.createElement('canvas');
           canvas.width = 256;
@@ -590,72 +569,203 @@ function deleteAnnotation(index) {
 }
 
 function focusOnAnnotation(index) {
-    if (index >= 0 && index < annotations.length && camera && controls) {
-      const annotation = annotations[index];
-      const position = annotation.position.clone();
+  if (index >= 0 && index < annotations.length && camera && controls) {
+    const annotation = annotations[index];
+    const position = annotation.position.clone();
+    
+    const offsetDistance = 20;
+    
+    const currentDirection = new THREE.Vector3();
+    camera.getWorldDirection(currentDirection);
+    
+    const newCameraPosition = position.clone().sub(
+      currentDirection.multiplyScalar(offsetDistance)
+    );
+    
+    const duration = 800;
+    const startTime = Date.now();
+    const startPosition = camera.position.clone();
+    const startTarget = controls.target.clone();
+    const endTarget = position.clone();
+    
+    const originalControlsState = {
+      enabled: controls.enabled
+    };
+    controls.enabled = false;
+    
+    function animateCamera() {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       
-      // Calculate a position that gives a good view of the annotation
-      const offsetDistance = 20; // Distance from annotation to place camera
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
       
-      // Get the current camera direction vector
-      const currentDirection = new THREE.Vector3();
-      camera.getWorldDirection(currentDirection);
+      camera.position.lerpVectors(startPosition, newCameraPosition, easeProgress);
+      controls.target.lerpVectors(startTarget, endTarget, easeProgress);
+      controls.update();
       
-      // Calculate a new camera position
-      const newCameraPosition = position.clone().sub(
-        currentDirection.multiplyScalar(offsetDistance)
+      if (progress < 1) {
+        requestAnimationFrame(animateCamera);
+      } else {
+        controls.enabled = originalControlsState.enabled;
+      }
+    }
+    
+    animateCamera();
+    
+    annotationMarkers.forEach((marker, i) => {
+      const sphere = marker.children.find(child =>
+        child.isMesh && child.geometry.type === 'SphereGeometry'
       );
       
-      // Animation settings
-      const duration = 800; // ms
-      const startTime = Date.now();
-      const startPosition = camera.position.clone();
-      const startTarget = controls.target.clone();
-      const endTarget = position.clone();
-      
-      // Disable controls during animation
-      const originalControlsState = {
-        enabled: controls.enabled
-      };
-      controls.enabled = false;
-      
-      // Animation function
-      function animateCamera() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Ease function for smoother animation
-        const easeProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
-        
-        // Interpolate camera position and target
-        camera.position.lerpVectors(startPosition, newCameraPosition, easeProgress);
-        controls.target.lerpVectors(startTarget, endTarget, easeProgress);
-        controls.update();
-        
-        if (progress < 1) {
-          requestAnimationFrame(animateCamera);
+      if (sphere && sphere.material) {
+        if (i === index) {
+          sphere.material.color.set(0x00FF00);
+          sphere.material.opacity = 1.0;
+          createClickAnimation(position);
         } else {
-          // Re-enable controls when animation is complete
-          controls.enabled = originalControlsState.enabled;
+          sphere.material.color.set(0xFF4500);
+          sphere.material.opacity = 0.8;
         }
       }
+    });
+    
+    selectedAnnotation = index;
+    return true;
+  }
+  return false;
+}
+
+function onMouseMove(event) {
+  if (!renderer || !camera) return;
+  
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  raycaster.setFromCamera(mouse, camera);
+  
+  annotationMarkers.forEach(markerGroup => {
+    if (markerGroup.userData.annotationIndex !== selectedAnnotation && markerGroup.visible) {
+      const sphere = markerGroup.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
+      if (sphere && sphere.material) {
+        sphere.material.color.set(0xFF4500);
+        sphere.material.opacity = 0.8;
+      }
+    }
+  });
+  
+  const intersects = raycaster.intersectObjects(annotationMarkers, true);
+  
+  if (intersects.length > 0) {
+    let markerGroup = intersects[0].object;
+    while (markerGroup.parent && !markerGroup.userData.hasOwnProperty('annotationIndex')) {
+      markerGroup = markerGroup.parent;
+    }
+    
+    if (markerGroup.userData.hasOwnProperty('annotationIndex') && markerGroup.visible) {
+      const annotationIndex = markerGroup.userData.annotationIndex;
       
-      // Start animation
-      animateCamera();
+      if (annotationIndex !== selectedAnnotation) {
+        const sphere = markerGroup.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
+        if (sphere && sphere.material) {
+          sphere.material.color.set(0xFFFF00);
+          sphere.material.opacity = 1.0;
+        }
+      }
+      document.body.style.cursor = 'pointer';
+    }
+  } else {
+    document.body.style.cursor = 'crosshair';
+  }
+  
+  if (meshes.length > 0) {
+    const meshIntersects = raycaster.intersectObjects(meshes);
+    if (meshIntersects.length > 0) {
+      const point = meshIntersects[0].point;
       
-      // Highlight the marker
-      annotationMarkers.forEach((marker, i) => {
-        const sphere = marker.children.find(child => 
-          child.isMesh && child.geometry.type === 'SphereGeometry'
-        );
+      if (!tempMarker) {
+        const tempGroup = new THREE.Group();
+        
+        const markerGeometry = new THREE.SphereGeometry(0.36, 16, 16);
+        const markerMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0x00FF00, 
+          transparent: true, 
+          opacity: 0.7,
+          depthTest: false
+        });
+        const sphere = new THREE.Mesh(markerGeometry, markerMaterial);
+        tempGroup.add(sphere);
+        
+        const lineLength = 1.2;
+        const lineWidth = 0.036;
+        
+        const hLineGeom = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
+        const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+        const hLine = new THREE.Mesh(hLineGeom, lineMaterial);
+        tempGroup.add(hLine);
+        
+        const vLineGeom = new THREE.BoxGeometry(lineWidth, lineLength, lineWidth);
+        const vLine = new THREE.Mesh(vLineGeom, lineMaterial);
+        tempGroup.add(vLine);
+        
+        const dLineGeom = new THREE.BoxGeometry(lineWidth, lineWidth, lineLength);
+        const dLine = new THREE.Mesh(dLineGeom, lineMaterial);
+        tempGroup.add(dLine);
+        
+        const circleGeometry = new THREE.RingGeometry(0.48, 0.504, 32);
+        const circleMaterial = new THREE.MeshBasicMaterial({
+          color: 0x00FFFF,
+          transparent: true,
+          opacity: 0.8,
+          side: THREE.DoubleSide,
+          depthTest: false
+        });
+        const circle = new THREE.Mesh(circleGeometry, circleMaterial);
+        circle.rotation.x = Math.PI / 2;
+        tempGroup.add(circle);
+        
+        tempMarker = tempGroup;
+        scene.add(tempMarker);
+      }
+      
+      tempMarker.position.copy(point);
+      tempMarker.visible = true;
+    } else if (tempMarker) {
+      tempMarker.visible = false;
+    }
+  } else if (tempMarker) {
+    tempMarker.visible = false;
+  }
+}
+
+function onMouseClick(event) {
+  if (!renderer || !camera) return;
+  
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  
+  raycaster.setFromCamera(mouse, camera);
+  
+  const markerIntersects = raycaster.intersectObjects(annotationMarkers, true);
+  if (markerIntersects.length > 0) {
+    let markerGroup = markerIntersects[0].object;
+    while (markerGroup.parent && !markerGroup.userData.hasOwnProperty('annotationIndex')) {
+      markerGroup = markerGroup.parent;
+    }
+    
+    if (markerGroup.userData.hasOwnProperty('annotationIndex') && markerGroup.visible) {
+      const index = markerGroup.userData.annotationIndex;
+      
+      selectedAnnotation = index;
+      
+      annotationMarkers.forEach((group, i) => {
+        const sphere = group.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
         
         if (sphere && sphere.material) {
-          if (i === index) {
+          if (i === selectedAnnotation) {
             sphere.material.color.set(0x00FF00);
             sphere.material.opacity = 1.0;
-            
-            // Create a pulse effect at the marker location
-            createClickAnimation(position);
           } else {
             sphere.material.color.set(0xFF4500);
             sphere.material.opacity = 0.8;
@@ -663,179 +773,32 @@ function focusOnAnnotation(index) {
         }
       });
       
-      selectedAnnotation = index;
-      return true;
-    }
-    return false;
-  }
-
-function onMouseMove(event) {
-    if (!renderer || !camera) return;
-    
-    const rect = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    
-    raycaster.setFromCamera(mouse, camera);
-    
-    annotationMarkers.forEach(markerGroup => {
-      if (markerGroup.userData.annotationIndex !== selectedAnnotation && markerGroup.visible) {
-        const sphere = markerGroup.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
-        if (sphere && sphere.material) {
-          sphere.material.color.set(0xFF4500);
-          sphere.material.opacity = 0.8;
-        }
-      }
-    });
-    
-    const intersects = raycaster.intersectObjects(annotationMarkers, true);
-    
-    if (intersects.length > 0) {
-      let markerGroup = intersects[0].object;
-      while (markerGroup.parent && !markerGroup.userData.hasOwnProperty('annotationIndex')) {
-        markerGroup = markerGroup.parent;
+      if (onAnnotationSelect && typeof onAnnotationSelect === 'function') {
+        onAnnotationSelect(annotations[index], index);
       }
       
-      if (markerGroup.userData.hasOwnProperty('annotationIndex') && markerGroup.visible) {
-        const annotationIndex = markerGroup.userData.annotationIndex;
-        
-        if (annotationIndex !== selectedAnnotation) {
-          const sphere = markerGroup.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
-          if (sphere && sphere.material) {
-            sphere.material.color.set(0xFFFF00);
-            sphere.material.opacity = 1.0;
-          }
-        }
-        document.body.style.cursor = 'pointer';
-      }
-    } else {
-      // 항상 메모모드이므로 crosshair 커서 유지
-      document.body.style.cursor = 'crosshair';
+      return;
     }
-    
-    if (meshes.length > 0) {
-      const meshIntersects = raycaster.intersectObjects(meshes);
-      if (meshIntersects.length > 0) {
-        const point = meshIntersects[0].point;
-        
-        if (!tempMarker) {
-          const tempGroup = new THREE.Group();
-          
-          const markerGeometry = new THREE.SphereGeometry(0.36, 16, 16);
-          const markerMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x00FF00, 
-            transparent: true, 
-            opacity: 0.7,
-            depthTest: false
-          });
-          const sphere = new THREE.Mesh(markerGeometry, markerMaterial);
-          tempGroup.add(sphere);
-          
-          const lineLength = 1.2;
-          const lineWidth = 0.036;
-          
-          const hLineGeom = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
-          const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-          const hLine = new THREE.Mesh(hLineGeom, lineMaterial);
-          tempGroup.add(hLine);
-          
-          const vLineGeom = new THREE.BoxGeometry(lineWidth, lineLength, lineWidth);
-          const vLine = new THREE.Mesh(vLineGeom, lineMaterial);
-          tempGroup.add(vLine);
-          
-          const dLineGeom = new THREE.BoxGeometry(lineWidth, lineWidth, lineLength);
-          const dLine = new THREE.Mesh(dLineGeom, lineMaterial);
-          tempGroup.add(dLine);
-          
-          const circleGeometry = new THREE.RingGeometry(0.48, 0.504, 32);
-          const circleMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00FFFF,
-            transparent: true,
-            opacity: 0.8,
-            side: THREE.DoubleSide,
-            depthTest: false
-          });
-          const circle = new THREE.Mesh(circleGeometry, circleMaterial);
-          circle.rotation.x = Math.PI / 2;
-          tempGroup.add(circle);
-          
-          tempMarker = tempGroup;
-          scene.add(tempMarker);
-        }
-        
-        tempMarker.position.copy(point);
-        tempMarker.visible = true;
-      } else if (tempMarker) {
+  }
+  
+  if (meshes.length > 0) {
+    const meshIntersects = raycaster.intersectObjects(meshes);
+    if (meshIntersects.length > 0) {
+      const point = meshIntersects[0].point;
+      
+      if (lastAddedAnnotationIndex !== null &&
+          annotations[lastAddedAnnotationIndex] &&
+          annotations[lastAddedAnnotationIndex].text === "") {
+        deleteAnnotation(lastAddedAnnotationIndex);
+      }
+      
+      addAnnotation(point, "");
+      
+      if (tempMarker) {
         tempMarker.visible = false;
       }
-    } else if (tempMarker) {
-      tempMarker.visible = false;
     }
-}
-
-function onMouseClick(event) {
-    if (!renderer || !camera) return;
-    
-    const rect = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    
-    raycaster.setFromCamera(mouse, camera);
-    
-    const markerIntersects = raycaster.intersectObjects(annotationMarkers, true);
-    if (markerIntersects.length > 0) {
-      let markerGroup = markerIntersects[0].object;
-      while (markerGroup.parent && !markerGroup.userData.hasOwnProperty('annotationIndex')) {
-        markerGroup = markerGroup.parent;
-      }
-      
-      if (markerGroup.userData.hasOwnProperty('annotationIndex') && markerGroup.visible) {
-        const index = markerGroup.userData.annotationIndex;
-        
-        selectedAnnotation = index;
-        
-        annotationMarkers.forEach((group, i) => {
-          const sphere = group.children.find(child => child.isMesh && child.geometry.type === 'SphereGeometry');
-          
-          if (sphere && sphere.material) {
-            if (i === selectedAnnotation) {
-              sphere.material.color.set(0x00FF00);
-              sphere.material.opacity = 1.0;
-            } else {
-              sphere.material.color.set(0xFF4500);
-              sphere.material.opacity = 0.8;
-            }
-          }
-        });
-        
-        if (onAnnotationSelect && typeof onAnnotationSelect === 'function') {
-          onAnnotationSelect(annotations[index], index);
-        }
-        
-        return;
-      }
-    }
-    
-    if (meshes.length > 0) {
-      const meshIntersects = raycaster.intersectObjects(meshes);
-      if (meshIntersects.length > 0) {
-        const point = meshIntersects[0].point;
-        
-        // 저장되지 않은 메모가 있으면 삭제
-        if (lastAddedAnnotationIndex !== null && 
-            annotations[lastAddedAnnotationIndex] && 
-            annotations[lastAddedAnnotationIndex].text === "") {
-          deleteAnnotation(lastAddedAnnotationIndex);
-        }
-        
-        // 새 메모 추가
-        addAnnotation(point, "");
-        
-        if (tempMarker) {
-          tempMarker.visible = false;
-        }
-      }
-    }
+  }
 }
 
 function init() {
@@ -875,7 +838,6 @@ function init() {
     onTextureLoaded();
   }, undefined, (error) => console.error('Texture loading error:', error));
   
-  
   material = new THREE.MeshMatcapMaterial({
     flatShading: false,
     side: THREE.DoubleSide
@@ -912,77 +874,77 @@ function init() {
 }
 
 function render() {
-    requestAnimationFrame(render);
-    controls.update();
+  requestAnimationFrame(render);
+  controls.update();
+  
+  if (camera && meshes.length > 0 && annotationMarkers.length > 0) {
+    const occlusionRaycaster = new THREE.Raycaster();
     
-    if (camera && meshes.length > 0 && annotationMarkers.length > 0) {
-        const occlusionRaycaster = new THREE.Raycaster();
-        
-        annotationMarkers.forEach(markerGroup => {
-            const markerPosition = markerGroup.position.clone();
-            
-            const direction = markerPosition.clone().sub(camera.position).normalize();
-            
-            occlusionRaycaster.set(camera.position, direction);
-            
-            const distanceToMarker = camera.position.distanceTo(markerPosition);
-            
-            const intersects = occlusionRaycaster.intersectObjects(meshes);
-            
-            const isOccluded = intersects.length > 0 && intersects[0].distance < distanceToMarker * 0.95;
-            
-            markerGroup.visible = !isOccluded;
-            markerGroup.userData.isOccluded = isOccluded;
-            
-            if (!isOccluded) {
-                markerGroup.children.forEach(child => {
-                    if (child.userData.isBillboard) {
-                        child.quaternion.copy(camera.quaternion);
-                    }
-                });
-            }
+    annotationMarkers.forEach(markerGroup => {
+      const markerPosition = markerGroup.position.clone();
+      
+      const direction = markerPosition.clone().sub(camera.position).normalize();
+      
+      occlusionRaycaster.set(camera.position, direction);
+      
+      const distanceToMarker = camera.position.distanceTo(markerPosition);
+      
+      const intersects = occlusionRaycaster.intersectObjects(meshes);
+      
+      const isOccluded = intersects.length > 0 && intersects[0].distance < distanceToMarker * 0.95;
+      
+      markerGroup.visible = !isOccluded;
+      markerGroup.userData.isOccluded = isOccluded;
+      
+      if (!isOccluded) {
+        markerGroup.children.forEach(child => {
+          if (child.userData.isBillboard) {
+            child.quaternion.copy(camera.quaternion);
+          }
         });
-    }
+      }
+    });
+  }
+  
+  if (window.annotationAnimations) {
+    const time = Date.now() * 0.001;
     
-    if (window.annotationAnimations) {
-        const time = Date.now() * 0.001;
+    window.annotationAnimations.forEach(ring => {
+      if (ring && ring.parent && ring.parent.visible && ring.userData && ring.userData.animation) {
+        const pulseSpeed = ring.userData.animation.speed;
+        const pulseFactor = 0.2 * Math.sin(time * pulseSpeed) + 0.8;
         
-        window.annotationAnimations.forEach(ring => {
-            if (ring && ring.parent && ring.parent.visible && ring.userData && ring.userData.animation) {
-                const pulseSpeed = ring.userData.animation.speed;
-                const pulseFactor = 0.2 * Math.sin(time * pulseSpeed) + 0.8;
-                
-                ring.scale.set(pulseFactor, pulseFactor, pulseFactor);
-                
-                ring.material.color.setHSL(
-                    (time * 0.1) % 1.0,
-                    0.7,
-                    0.6
-                );
-                
-                ring.material.opacity = 0.3 + 0.4 * Math.sin(time * pulseSpeed * 0.5);
-            }
-        });
-    }
-    
-    if (window.clickAnimations) {
-        const now = Date.now();
+        ring.scale.set(pulseFactor, pulseFactor, pulseFactor);
         
-        window.clickAnimations.forEach(ripple => {
-            if (ripple && ripple.userData) {
-                const elapsed = now - ripple.userData.createdAt;
-                const duration = ripple.userData.duration;
-                const progress = Math.min(elapsed / duration, 1.0);
-                
-                const scale = 1.0 + progress * 30.0;
-                ripple.scale.set(scale, scale, scale);
-                
-                ripple.material.opacity = 0.9 * (1.0 - progress);
-            }
-        });
-    }
+        ring.material.color.setHSL(
+          (time * 0.1) % 1.0,
+          0.7,
+          0.6
+        );
+        
+        ring.material.opacity = 0.3 + 0.4 * Math.sin(time * pulseSpeed * 0.5);
+      }
+    });
+  }
+  
+  if (window.clickAnimations) {
+    const now = Date.now();
     
-    renderer.render(scene, camera);
+    window.clickAnimations.forEach(ripple => {
+      if (ripple && ripple.userData) {
+        const elapsed = now - ripple.userData.createdAt;
+        const duration = ripple.userData.duration;
+        const progress = Math.min(elapsed / duration, 1.0);
+        
+        const scale = 1.0 + progress * 30.0;
+        ripple.scale.set(scale, scale, scale);
+        
+        ripple.material.opacity = 0.9 * (1.0 - progress);
+      }
+    });
+  }
+  
+  renderer.render(scene, camera);
 }
 
 function updateMaterials() {
@@ -1000,7 +962,6 @@ function updateMaterials() {
   });
 }
 
-// 로딩 중 애니메이션을 추가한 loadModelsFromUrls 함수
 async function loadModelsFromUrls(fileList) {
   showLoadingAnimation();
   clearAllMeshes();
@@ -1060,7 +1021,6 @@ function getAnnotations() {
 }
 
 export function toggleAnnotationMode() {
-  // 항상 메모모드가 활성화되도록 수정
   isAnnotationMode = true;
   document.body.style.cursor = 'crosshair';
   return isAnnotationMode;
