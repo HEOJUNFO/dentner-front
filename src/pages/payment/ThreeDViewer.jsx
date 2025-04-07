@@ -473,6 +473,16 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       return updated;
     });
   };
+
+  // 새로 추가: 슬라이더 트랙 클릭 시 투명도 변경 핸들러
+  const handleSliderClick = (e, fileNo) => {
+    const sliderRect = e.currentTarget.getBoundingClientRect();
+    const sliderWidth = sliderRect.width;
+    const offsetX = e.clientX - sliderRect.left;
+    let percentage = Math.round((offsetX / sliderWidth) * 100);
+    percentage = Math.max(0, Math.min(100, percentage));
+    handleTransparencyChange(fileNo, percentage);
+  };
   
   // Start dragging the slider thumb
   const startDragging = (fileNo) => {
@@ -679,7 +689,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       backgroundColor: 'transparent',
     },
     
-    // Slider track - white background
+    // Slider track - white background; onClick 핸들러 추가
     sliderTrack: {
       position: 'absolute',
       top: 0,
@@ -897,7 +907,11 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
                 style={styles.sliderContainer}
                 id={`slider-track-${file.threeFileNo}`}
               >
-                <div style={styles.sliderTrack}></div>
+                {/* 슬라이더 트랙에 클릭 이벤트 추가 */}
+                <div 
+                  style={styles.sliderTrack} 
+                  onClick={(e) => handleSliderClick(e, file.threeFileNo)}
+                ></div>
                 <div 
                   style={styles.sliderThumb(modelTransparency[file.threeFileNo] || 100)}
                   onMouseDown={(e) => {
