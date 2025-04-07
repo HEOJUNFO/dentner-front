@@ -950,7 +950,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
               <div>{annotation.text.substring(0, 50)}{annotation.text.length > 50 ? '...' : ''}</div>
               <div style={{ fontSize: '0.8em', color: '#777' }}>
                 {annotation.writerName && (
-                  <span style={{ marginRight: '10px' }}>{annotation.writerName}</span>
+                  <span style={{ marginRight: '10px',color:'#4b72fe' }}>{annotation.writerName}</span>
                 )}
                 {new Date(annotation.updatedAt || annotation.createdAt).toLocaleDateString()}
               </div>
@@ -967,6 +967,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
               ? (isEnglish ? 'Edit Annotation' : '메모 수정하기')
               : (isEnglish ? 'Add New Annotation' : '새 메모 추가하기')}
           </h3>
+          <br/>
           
           <textarea
             style={styles.annotationTextarea}

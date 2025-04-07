@@ -6,6 +6,7 @@ import { RequestMiniInfo } from '@components/ui';
 import { withCommas, replaceToBr, getByteSize } from '@utils/common';
 import useRequestAddOrderPaymentViewPage from './hooks/useRequestAddOrderPaymentViewPage';
 import { useTranslation } from 'react-i18next';
+import useFileDownload from '@components/hooks/useFileDownload';
 
 /**
  * path: payment/reqeust/charges/view/{requestFormNo}
@@ -16,6 +17,8 @@ const RequestAddOrderPaymentViewPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { isLoading, error, data, id } = useRequestAddOrderPaymentViewPage();
+
+  const { handleFileDownload, handleFileZipDownload, handleFileDownloadEncrypt, handleFileZipDownloadEncrypt } = useFileDownload();
 
   if (isLoading) return <></>;
   if (error) return <>{error}</>;
@@ -59,14 +62,15 @@ const RequestAddOrderPaymentViewPage = () => {
                               {el.fileRealName}
                               <em>{getByteSize(el.fileSize)}</em>
                             </span>
-                            <button className="bFD">Download</button>
+                            <button className="bFD" onClick={(e) => handleFileDownload(e, el.fileNo, el.fileRealName)}>
+                              Download</button>
                           </span>
                         </li>
                       );
                     })}
                   </ul>
                   <div className="allDownload">
-                    <BaseButton label={t('version2_2.text117')} className={'btnG'} />
+                    <BaseButton label={t('version2_2.text117')} className={'btnG'} onClick={(e) => handleFileZipDownload(e, 'K', data?.requestFormRemakingNo)} />
                   </div>
                 </div>
               </div>
