@@ -592,7 +592,6 @@ export const delete3d = async (threeInfoNoArr) => {
 export const get3dMemo = async (threeFileNo) => {
   try {
     const response = await axios.get(`/api/v1/transaction/3d/memo/${threeFileNo}`);
-    console.log('get3dmemo'+response.data)
     return response.data;
   } catch (error) {
     throw error;
@@ -607,7 +606,6 @@ export const get3dMemo = async (threeFileNo) => {
 export const post3dMemo = async ({ threeFileNo, body }) => {
   try {
     const response = await axios.post(`/api/v1/transaction/3d/memo/${threeFileNo}`, body);
-    console.log('post3dmemo'+response.data)
     return response.data;
   } catch (error) {
     throw error.response.data;

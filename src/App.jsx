@@ -33,7 +33,6 @@ function App() {
   useEffect(() => {
     const handleVisibility = async () => {
       if (document.visibilityState === 'visible') {
-        console.log('앱이 포그라운드로 돌아옴');
         
         // 앱이 다시 포그라운드로 돌아올 때 토큰 유효성 재검증
         const user = UserStore.getState().user;

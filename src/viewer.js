@@ -465,8 +465,6 @@ function addExistingAnnotation(annotation) {
     scene.add(marker);
     annotationMarkers.push(marker);
     
-    console.log('Added existing annotation:', newAnnotation);
-    
     return newAnnotation;
   } catch (error) {
     console.error('Error adding existing annotation:', error, annotation);

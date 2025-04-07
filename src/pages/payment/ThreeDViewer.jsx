@@ -205,14 +205,26 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       
       setCurrentFileNo(fileNo);
       
-      // Fetch memos from server
+      // 1. 기존 메모 목록 초기화
+      setAnnotations([]);
+      
+      // 2. 뷰어에서 모든 마커 제거 (if possible)
+      if (viewerRef.current && viewerRef.current.clearAllAnnotations) {
+        viewerRef.current.clearAllAnnotations();
+      } else if (viewerRef.current && viewerRef.current.getAnnotations && viewerRef.current.deleteAnnotation) {
+        // 대체 방법: 개별적으로 모든 마커 제거
+        const viewerAnnotations = viewerRef.current.getAnnotations();
+        for (let i = viewerAnnotations.length - 1; i >= 0; i--) {
+          viewerRef.current.deleteAnnotation(i);
+        }
+      }
+      
+      // 3. 서버에서 메모 가져오기
       const response = await get3dMemo(fileNo);
       
       if (response?.data && viewerRef.current) {
         // Filter parent memos (those without a parent)
         const parentMemos = response.data.filter(memo => !memo.threeParentNo);
-        
-        console.log('Loaded memos from server:', parentMemos);
         
         // Group memos by position
         const positionGroups = {};
@@ -246,7 +258,6 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         Object.entries(positionGroups).forEach(([posKey, memoGroup]) => {
           // Skip this position group if it's in the deleted set
           if (deletedPositions.has(posKey)) {
-            console.log(`Skipping position ${posKey} as it contains a deleted memo`);
             return;
           }
           
@@ -262,7 +273,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
             // If neither has updateDt, compare registerDt
             else return new Date(b.registerDt) - new Date(a.registerDt);
           });
-
+  
           const nonDeletedMemos = sortedGroup.filter(memo => 
             !(memo.threeMemo && memo.threeMemo.startsWith('!del!'))
           );
@@ -270,10 +281,10 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
           if (nonDeletedMemos.length > 0) {
             filteredMemos.push(nonDeletedMemos[0]);
           }
-          
         });
         
-        console.log('Filtered to most recent non-deleted memos only:', filteredMemos);
+        // 새 배열을 생성하여 annotations 업데이트 준비
+        const newAnnotations = [];
         
         // Loop through each filtered memo and add it to the viewer
         for (const memo of filteredMemos) {
@@ -294,11 +305,13 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
           
           if (viewerRef.current.addExistingAnnotation) {
             viewerRef.current.addExistingAnnotation(annotation);
+            // 추가된 애노테이션을 새 배열에 추가
+            newAnnotations.push(annotation);
           }
         }
         
-        // Sync annotations from viewer
-        syncAnnotations();
+        // 새 배열로 annotations 상태 업데이트
+        setAnnotations(newAnnotations);
       }
     } catch (error) {
       console.error('Failed to load annotations from server:', error);
@@ -337,7 +350,6 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
     setShowAnnotationForm(true);
   };
   
-  // Save the current annotation text
   const saveAnnotation = async () => {
     if (selectedAnnotation && viewerRef.current && viewerRef.current.updateAnnotation) {
       // Update the annotation in the viewer
@@ -373,6 +385,9 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
           }
           
           showSnackbar(isEnglish ? 'Annotation saved successfully.' : '메모가 저장되었습니다.');
+          
+          // 서버에서 새로운 메모 목록 가져오기 (이제 loadAnnotationsFromServer 함수가 모든 정리를 처리)
+          await loadAnnotationsFromServer();
         } else {
           showWarnSnackbar(isEnglish ? 'Failed to save annotation.' : '메모 저장에 실패했습니다.');
         }
@@ -381,13 +396,10 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         showWarnSnackbar(isEnglish ? 'An error occurred while saving the annotation.' : '메모 저장 중 오류가 발생했습니다.');
       }
       
-      // Synchronize annotations list
-      syncAnnotations();
-      
       setShowAnnotationForm(false);
     }
   };
-  
+
   // Delete the selected annotation
   const deleteAnnotation = async () => {
     if (selectedAnnotation && viewerRef.current && viewerRef.current.deleteAnnotation) {
@@ -930,49 +942,49 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       </div>
       
       {annotations.length > 0 && (
-        <div style={styles.annotationPanel}>
-          <div style={styles.memoPanelHeader}>
-            <h3 style={{ margin: 0 }}>{isEnglish ? 'Memo List' : '메모 목록'}</h3>
-            <div 
-              style={styles.memoCloseButton}
-              onClick={toggleMemoList}
-            >
-              ✕
-            </div>
-          </div>
-          <div style={styles.annotationList}>
-            {annotations.map((annotation, index) => (
-            <div 
-              key={annotation.id || `temp-${index}`} 
-              style={{
-                ...styles.annotationItem,
-                backgroundColor: selectedAnnotation?.index === index ? '#e0e0e0' : '#f5f5f5'
-              }}
-              onClick={() => {
-                if (viewerRef.current) {
-                  // First focus the camera on the marker
-                  if (viewerRef.current.focusOnAnnotation) {
-                    viewerRef.current.focusOnAnnotation(index);
-                  }
-                  
-                  // Then call the existing selection handler
-                  handleAnnotationSelect(annotation, index);
-                }
-              }}
-            >
-              <div style={{ fontWeight: 'bold' }}>#{index + 1}</div>
-              <div>{annotation.text.substring(0, 50)}{annotation.text.length > 50 ? '...' : ''}</div>
-              <div style={{ fontSize: '0.8em', color: '#777' }}>
-                {annotation.writerName && (
-                  <span style={{ marginRight: '10px',color:'#4b72fe' }}>{annotation.writerName}</span>
-                )}
-                {new Date(annotation.updatedAt || annotation.createdAt).toLocaleDateString()}
-              </div>
-            </div>
-            ))}
+  <div style={styles.annotationPanel}>
+    <div style={styles.memoPanelHeader}>
+      <h3 style={{ margin: 0 }}>{isEnglish ? 'Memo List' : '메모 목록'}</h3>
+      <div 
+        style={styles.memoCloseButton}
+        onClick={toggleMemoList}
+      >
+        ✕
+      </div>
+    </div>
+    <div style={styles.annotationList}>
+      {annotations.map((annotation, index) => (
+        <div 
+          key={`memo-${annotation.id || index}-${annotation.position.x}-${annotation.position.y}-${annotation.position.z}`}
+          style={{
+            ...styles.annotationItem,
+            backgroundColor: selectedAnnotation?.index === index ? '#e0e0e0' : '#f5f5f5'
+          }}
+          onClick={() => {
+            if (viewerRef.current) {
+              // First focus the camera on the marker
+              if (viewerRef.current.focusOnAnnotation) {
+                viewerRef.current.focusOnAnnotation(index);
+              }
+              
+              // Then call the existing selection handler
+              handleAnnotationSelect(annotation, index);
+            }
+          }}
+        >
+          <div style={{ fontWeight: 'bold' }}>#{index + 1}</div>
+          <div>{annotation.text.substring(0, 50)}{annotation.text.length > 50 ? '...' : ''}</div>
+          <div style={{ fontSize: '0.8em', color: '#777' }}>
+            {annotation.writerName && (
+              <span style={{ marginRight: '10px',color:'#4b72fe' }}>{annotation.writerName}</span>
+            )}
+            {new Date(annotation.updatedAt || annotation.createdAt).toLocaleDateString()}
           </div>
         </div>
-      )}
+      ))}
+    </div>
+  </div>
+)}
       
       {showAnnotationForm && (
         <div style={styles.annotationForm}>
