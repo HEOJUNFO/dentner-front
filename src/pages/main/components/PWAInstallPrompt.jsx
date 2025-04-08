@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const PWAInstallPrompt = ({ onClose }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const { t, i18n } = useTranslation();
+
+  const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   
   useEffect(() => {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -16,26 +20,23 @@ const PWAInstallPrompt = ({ onClose }) => {
 
   const handleBeforeInstallPrompt = (event) => {
     event.preventDefault();
-  
     setDeferredPrompt(event);
   };
   
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // 설치 프롬프트를 사용할 수 없는 경우 대체 링크로 이동
-      window.location.href = '/pwa-install-instructions';
+      // 설치 프롬프트를 사용할 수 없는 경우 Notion 링크로 이동
+      window.location.href = 'https://persistent-noodle-339.notion.site/PWA-1c768c8beb948068a299ef5b98951395';
       return;
     }
     
     deferredPrompt.prompt();
-
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === "accepted") {
         console.log("사용자가 앱 설치를 동의했습니다.");
       } else {
         console.log("사용자가 앱 설치를 동의하지 않았습니다.");
       }
-
       setDeferredPrompt(null);
     });
   };
@@ -55,7 +56,7 @@ const PWAInstallPrompt = ({ onClose }) => {
   };
 
   const modalContentStyle = {
-    backgroundColor: 'white',
+    backgroundColor: '#F2F7FF',
     borderRadius: '16px',
     padding: '20px',
     width: '90%',
@@ -86,7 +87,8 @@ const PWAInstallPrompt = ({ onClose }) => {
     borderRadius: '12px',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
   };
 
   const logoTextStyle = {
@@ -130,7 +132,9 @@ const PWAInstallPrompt = ({ onClose }) => {
     <div style={overlayStyle}>
       <div style={modalContentStyle}>
         <div style={headerStyle}>
-          <h2 style={headerTitleStyle}>홈 화면 추가</h2>
+          <h2 style={headerTitleStyle}>
+            {isEnglish ? "Add to Home Screen" : "홈 화면 추가"}
+          </h2>
         </div>
         
         <div style={logoContainerStyle}>
@@ -140,20 +144,21 @@ const PWAInstallPrompt = ({ onClose }) => {
         </div>
         
         <p style={descriptionStyle}>
-          Dentner앱을 홈 화면에 추가하여<br />
-          빠르고 편리하게 이용하세요.
+          {isEnglish
+            ? "Add the Dentner app to your home screen for fast and convenient access."
+            : "Dentner앱을 홈 화면에 추가하여<br />빠르고 편리하게 이용하세요."}
         </p>
         
         <button 
           style={installButtonStyle} 
           onClick={handleInstallClick}
         >
-          앱 설치하기
+          {isEnglish ? "Install App" : "앱 설치하기"}
         </button>
         
         <div style={footerStyle}>
           <button style={webButtonStyle} onClick={onClose}>
-            괜찮아요. 웹으로 볼게요
+            {isEnglish ? "No thanks, I'll use the web" : "괜찮아요. 웹으로 볼게요"}
           </button>
         </div>
       </div>
