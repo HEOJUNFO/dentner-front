@@ -8,6 +8,7 @@ const PWAInstallPrompt = ({ onClose }) => {
   const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   
   useEffect(() => {
+    console.log('pwaevent')
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   
     return () => {
@@ -25,7 +26,13 @@ const PWAInstallPrompt = ({ onClose }) => {
   
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // 설치 프롬프트를 사용할 수 없는 경우 Notion 링크로 이동
+      // 더 자세한 로깅
+      console.log('설치 조건: ', {
+        isHttps: window.location.protocol === 'https:',
+        isStandalone: window.matchMedia('(display-mode: standalone)').matches,
+        hasServiceWorker: 'serviceWorker' in navigator
+      });
+      
       window.location.href = 'https://persistent-noodle-339.notion.site/PWA-1c768c8beb948068a299ef5b98951395';
       return;
     }
