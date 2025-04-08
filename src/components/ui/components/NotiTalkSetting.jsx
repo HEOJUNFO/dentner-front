@@ -46,7 +46,15 @@ const NotiTalkSetting = ({ onChange }) => {
           <sup>필수항목</sup>
         </dt>
         <dd className="talkChoice">
-          <em>{t('mypage.talk_type')}</em>
+        <div style={{ 
+    fontSize: '14px', 
+    color: '#666', 
+    marginBottom: '15px' 
+  }}>
+    {isEnglish 
+      ? 'Please select your notification method. (Multiple selections possible)'
+      : '알림톡 방식을 선택해 주세요. (중복 선택 가능)'}
+  </div>
           <span className="talkSet short">
             {apps['ko'].map((el, idx) => (
               <span key={`apps${idx}`}>
