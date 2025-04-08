@@ -144,9 +144,15 @@ const PWAInstallPrompt = ({ onClose }) => {
         </div>
         
         <p style={descriptionStyle}>
-          {isEnglish
-            ? "Add the Dentner app to your home screen for fast and convenient access."
-            : "Dentner앱을 홈 화면에 추가하여 빠르고 편리하게 이용하세요."}
+          {isEnglish ? (
+            "Add the Dentner app to your home screen for fast and convenient access."
+          ) : (
+            <>
+              Dentner앱을 홈 화면에 추가하여
+              <br />
+              빠르고 편리하게 이용하세요.
+            </>
+          )}
         </p>
         
         <button 
