@@ -28,16 +28,13 @@ let tempMarker = null;
 let onAnnotationSelect = null;
 let onAnnotationAdd = null;
 let lastAddedAnnotationIndex = null;
+let currentAnimation = null;
 
 const params = {
   matcap: 'Clay',
 };
 
 const matcaps = {};
-const colorPalette = [
-  '#F9E4C8', '#FAF0D1', '#FFFFE0', '#FDE8D0', '#FFFAF0',
-  '#EDE6DB', '#D3D3C3', '#D8D8D8', '#F2F2F5', '#F3E5AB'
-];
 
 const stlLoader = new STLLoader();
 
@@ -463,7 +460,7 @@ function updateAnnotationId(index, newId) {
 }
 
 function createClickAnimation(position) {
-  const rippleGeometry = new THREE.RingGeometry(0.06, 0.03, 16);
+  const rippleGeometry = new THREE.RingGeometry(0.01, 0.03, 16);
   const rippleMaterial = new THREE.MeshBasicMaterial({
     color: 0x00FFFF,
     transparent: true,
@@ -575,23 +572,87 @@ function focusOnAnnotation(index) {
     
     const offsetDistance = 20;
     
+    // 진행 중인 애니메이션이 있으면 취소
+    if (currentAnimation) {
+      cancelAnimationFrame(currentAnimation);
+      currentAnimation = null;
+    }
+    
+    // 컨트롤 비활성화
+    controls.enabled = false;
+    
+    // First attempt - use current direction
     const currentDirection = new THREE.Vector3();
     camera.getWorldDirection(currentDirection);
     
-    const newCameraPosition = position.clone().sub(
+    let newCameraPosition = position.clone().sub(
       currentDirection.multiplyScalar(offsetDistance)
     );
     
+    // Function to check if annotation is visible from a camera position
+    function isAnnotationVisible(cameraPos) {
+      // Create a raycaster from camera position to annotation
+      const direction = position.clone().sub(cameraPos).normalize();
+      const occlusionRaycaster = new THREE.Raycaster();
+      occlusionRaycaster.set(cameraPos, direction);
+      
+      const distanceToMarker = cameraPos.distanceTo(position);
+      const intersects = occlusionRaycaster.intersectObjects(meshes);
+      
+      // If there's an intersection before reaching the annotation, it's occluded
+      return !(intersects.length > 0 && intersects[0].distance < distanceToMarker * 0.95);
+    }
+    
+    // If the annotation would be occluded from the initial position, find a better angle
+    if (!isAnnotationVisible(newCameraPosition)) {
+      // Try different angles around the annotation
+      const angles = [45, 90, 135, 180, 225, 270, 315];
+      let bestPosition = null;
+      
+      // Create a coordinate system centered on the annotation
+      const up = new THREE.Vector3(0, 1, 0);
+      const right = new THREE.Vector3(1, 0, 0);
+      
+      // Try positions at different angles around the annotation
+      for (const angle of angles) {
+        const radians = angle * (Math.PI / 180);
+        
+        // Create a position at this angle around the annotation
+        const rotationMatrix = new THREE.Matrix4().makeRotationAxis(up, radians);
+        const testDirection = new THREE.Vector3(0, 0, 1).applyMatrix4(rotationMatrix);
+        
+        // Also try different elevations
+        for (const elevation of [-30, 0, 30]) {
+          const elevRad = elevation * (Math.PI / 180);
+          const elevMatrix = new THREE.Matrix4().makeRotationAxis(right, elevRad);
+          const finalDirection = testDirection.clone().applyMatrix4(elevMatrix).normalize();
+          
+          // Calculate position at this angle
+          const testPosition = position.clone().add(
+            finalDirection.multiplyScalar(-offsetDistance)
+          );
+          
+          if (isAnnotationVisible(testPosition)) {
+            bestPosition = testPosition;
+            break;
+          }
+        }
+        
+        if (bestPosition) break;
+      }
+      
+      // If we found a better position, use it
+      if (bestPosition) {
+        newCameraPosition = bestPosition;
+      }
+    }
+    
+    // Animation settings
     const duration = 800;
     const startTime = Date.now();
     const startPosition = camera.position.clone();
     const startTarget = controls.target.clone();
     const endTarget = position.clone();
-    
-    const originalControlsState = {
-      enabled: controls.enabled
-    };
-    controls.enabled = false;
     
     function animateCamera() {
       const elapsed = Date.now() - startTime;
@@ -604,13 +665,15 @@ function focusOnAnnotation(index) {
       controls.update();
       
       if (progress < 1) {
-        requestAnimationFrame(animateCamera);
+        currentAnimation = requestAnimationFrame(animateCamera);
       } else {
-        controls.enabled = originalControlsState.enabled;
+        // 애니메이션 종료 시 컨트롤 항상 활성화
+        controls.enabled = true;
+        currentAnimation = null;
       }
     }
     
-    animateCamera();
+    currentAnimation = requestAnimationFrame(animateCamera);
     
     annotationMarkers.forEach((marker, i) => {
       const sphere = marker.children.find(child =>
@@ -695,34 +758,6 @@ function onMouseMove(event) {
         });
         const sphere = new THREE.Mesh(markerGeometry, markerMaterial);
         tempGroup.add(sphere);
-        
-        const lineLength = 1.2;
-        const lineWidth = 0.036;
-        
-        const hLineGeom = new THREE.BoxGeometry(lineLength, lineWidth, lineWidth);
-        const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
-        const hLine = new THREE.Mesh(hLineGeom, lineMaterial);
-        tempGroup.add(hLine);
-        
-        const vLineGeom = new THREE.BoxGeometry(lineWidth, lineLength, lineWidth);
-        const vLine = new THREE.Mesh(vLineGeom, lineMaterial);
-        tempGroup.add(vLine);
-        
-        const dLineGeom = new THREE.BoxGeometry(lineWidth, lineWidth, lineLength);
-        const dLine = new THREE.Mesh(dLineGeom, lineMaterial);
-        tempGroup.add(dLine);
-        
-        const circleGeometry = new THREE.RingGeometry(0.48, 0.504, 32);
-        const circleMaterial = new THREE.MeshBasicMaterial({
-          color: 0x00FFFF,
-          transparent: true,
-          opacity: 0.8,
-          side: THREE.DoubleSide,
-          depthTest: false
-        });
-        const circle = new THREE.Mesh(circleGeometry, circleMaterial);
-        circle.rotation.x = Math.PI / 2;
-        tempGroup.add(circle);
         
         tempMarker = tempGroup;
         scene.add(tempMarker);
@@ -1056,6 +1091,11 @@ export function initViewer(container, modelData, annotationSelectCallback, annot
 }
 
 export function cleanupViewer() {
+  if (currentAnimation) {
+    cancelAnimationFrame(currentAnimation);
+    currentAnimation = null;
+  }
+  
   if (cleanupFunction) {
     cleanupFunction();
     cleanupFunction = null;

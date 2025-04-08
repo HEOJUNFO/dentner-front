@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { BaseInput, BaseButton, ModalPresent, ModalAlertPresent, ModalFullPresent } from '@components/common';
 import { ThreeDCommsModal, ConfirmModal } from '@components/ui';
 import ThreeDViewer from './ThreeDViewer';
 import useCADViewPage from './hooks/useCADCommsPage';
 import { useTranslation } from 'react-i18next';
-// ChannelService 임포트 (파일 경로는 실제 프로젝트 구조에 맞게 수정)
+import { NotiContext } from '../../components/ui/layout/hooks/useContext'; // Update this path if needed based on your project structure
+
 import ChannelService from '../../ChannelService';
 
 const CADCommsPage = () => {
@@ -34,15 +35,18 @@ const CADCommsPage = () => {
     fetch3d,
   } = useCADViewPage();
   const { t } = useTranslation();
+  const { setIsModalOpen } = useContext(NotiContext); // Access the context
 
-  // 모달의 visible 상태 변화에 따라 채널톡 버튼을 숨기거나 보여줍니다.
+  // Update both ChannelTalk and PWA banner visibility when modal state changes
   useEffect(() => {
     if (isModal?.isVisible) {
       ChannelService.hideChannelButton();
+      setIsModalOpen(true); // Hide PWA banner when modal is open
     } else {
       ChannelService.showChannelButton();
+      setIsModalOpen(false); // Show PWA banner when modal is closed
     }
-  }, [isModal?.isVisible]);
+  }, [isModal?.isVisible, setIsModalOpen]);
 
   if (isLoading) return <></>;
   if (error) return <>{error}</>;

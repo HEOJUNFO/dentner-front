@@ -1,5 +1,5 @@
-import { React, useState, useRef, useEffect, useContext } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { React, useState,useEffect} from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useHeader } from './hooks/useHeader';
 import 'react-modern-drawer/dist/index.css';
