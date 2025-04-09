@@ -120,8 +120,20 @@ const useDesignerViewPage = () => {
 
   // 3d 상세보기
   const handleThreeDView = () => {
-    setModal4({ isVisible: true, fileList: file?.cadList });
+    // cadList가 있다면 viewer.js에서 필요한 속성 이름으로 매핑
+    const mappedFiles = file?.cadList ? file.cadList.map(item => ({
+      threeFileNo: item.fileNo,
+      threeFileUrl: item.fileUrl,
+      threeFileRealName: item.fileRealName || item.fileName
+    })) : [];
+
+    // 모달 상태 설정
+    setModal4({ 
+      isVisible: true, 
+      fileList: mappedFiles 
+    });
   };
+
 
   // 치자이너 차단
   const handleAddBlock = async (e) => {

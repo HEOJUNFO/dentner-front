@@ -6,7 +6,7 @@ import { get3dMemo, post3dMemo } from '@api/Payment';
 import * as THREE from 'three';
 import MemoListSVG from '../../svg/MemoListSVG';
 
-const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }) => {
+const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj, isMemo = true }) => {
   const { t, i18n } = useTranslation();
   const isEnglish = i18n.language === 'en' || i18n.language === 'en-US';
   const containerRef = useRef(null);
@@ -21,8 +21,9 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   const [currentFileNo, setCurrentFileNo] = useState(null);
   const [lastAddedIndex, setLastAddedIndex] = useState(null);
   const [collapsedModelList, setCollapsedModelList] = useState(false);
-  const [showMemoList, setShowMemoList] = useState(!isMobile);
+  const [showMemoList, setShowMemoList] = useState(!isMobile && isMemo);
   const [modelTransparency, setModelTransparency] = useState({});
+  const [modelVisibility, setModelVisibility] = useState({});
   const [isDragging, setIsDragging] = useState(null);
   
   useEffect(() => {
@@ -33,7 +34,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         setShowMemoList(false);
         setCollapsedModelList(false);
       } else {
-        setShowMemoList(true);
+        setShowMemoList(isMemo);
       }
     };
     
@@ -42,17 +43,22 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
-  }, []);
+  }, [isMemo]);
   
   const modelListContentWidth = collapsedModelList ? '0' : (isMobile ? '100%' : '440px');
   
   useEffect(() => {
     if (fileList && fileList.length > 0) {
       const initialTransparency = {};
-      fileList.forEach(file => {
+      const initialVisibility = {};
+      
+      fileList.forEach((file, index) => {
         initialTransparency[file.threeFileNo] = 100;
+        initialVisibility[file.threeFileNo] = index === 0; // Only first model is visible
       });
+      
       setModelTransparency(initialTransparency);
+      setModelVisibility(initialVisibility);
     }
     
     window.threeDViewerData = {
@@ -66,7 +72,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       setCurrentFileNo(fileList[0].threeFileNo);
     }
     
-    const loadViewer = async () => {
+            const loadViewer = async () => {
       try {
         const viewerModule = await import('/src/viewer.js');
         if (viewerRef.current && viewerRef.current.cleanupViewer) {
@@ -74,11 +80,32 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         }
         if (containerRef.current) {
           viewerRef.current = viewerModule;
+          
+          // 모델을 먼저 로드한 후 가시성 설정을 위한 콜백 함수 정의
+          const onModelsLoaded = () => {
+            if (fileList && fileList.length > 0) {
+              fileList.forEach((file, index) => {
+                if (viewerRef.current && viewerRef.current.setModelVisibility) {
+                  const isVisible = index === 0;
+                  viewerRef.current.setModelVisibility(file.threeFileNo, isVisible);
+                  
+                  // Update local state to match
+                  setModelVisibility(prev => ({
+                    ...prev,
+                    [file.threeFileNo]: isVisible
+                  }));
+                }
+              });
+            }
+          };
+          
+          // 로드 완료 콜백 함수를 전달
           viewerModule.initViewer(
             containerRef.current, 
             window.threeDViewerData,
-            handleAnnotationSelect,
-            handleAnnotationAdd
+            isMemo ? handleAnnotationSelect : null,
+            isMemo ? handleAnnotationAdd : null,
+            onModelsLoaded // 콜백 추가
           );
         }
       } catch (error) {
@@ -96,7 +123,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
       }
       delete window.threeDViewerData;
     };
-  }, [fileList, requestFormNo, threeInfoNo, threeSj]);
+  }, [fileList, requestFormNo, threeInfoNo, threeSj, isMemo]);
   
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -252,12 +279,16 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
   
   const handleAnnotationSelect = (annotation, index) => {
+    if (!isMemo) return;
+    
     setSelectedAnnotation({ annotation, index });
     setAnnotationText(annotation.text);
     setShowAnnotationForm(true);
   };
   
   const handleAnnotationAdd = async (annotation, index) => {
+    if (!isMemo) return;
+    
     const currentAnnotations = syncAnnotations() || [];
     setLastAddedIndex(index);
     setSelectedAnnotation({ annotation, index });
@@ -266,6 +297,8 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
   
   const saveAnnotation = async () => {
+    if (!isMemo) return;
+    
     if (selectedAnnotation && viewerRef.current && viewerRef.current.updateAnnotation) {
       viewerRef.current.updateAnnotation(selectedAnnotation.index, annotationText);
       if (lastAddedIndex === selectedAnnotation.index) {
@@ -302,6 +335,8 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
 
   const deleteAnnotation = async () => {
+    if (!isMemo) return;
+    
     if (selectedAnnotation && viewerRef.current && viewerRef.current.deleteAnnotation) {
       const annotationToDelete = selectedAnnotation.annotation;
       try {
@@ -340,6 +375,8 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
   
   const cancelAnnotation = () => {
+    if (!isMemo) return;
+    
     if (selectedAnnotation && selectedAnnotation.annotation.text === '' && annotationText === '') {
       deleteAnnotation();
     } else {
@@ -380,6 +417,8 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
   
   const toggleMemoList = () => {
+    if (!isMemo) return;
+    
     setShowMemoList(prev => !prev);
     if (isMobile && !collapsedModelList) {
       setCollapsedModelList(true);
@@ -387,6 +426,8 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
   };
   
   useEffect(() => {
+    if (!isMemo) return;
+    
     const handleClickForSync = () => {
       setTimeout(syncAnnotations, 10);
     };
@@ -401,7 +442,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         container.removeEventListener('click', handleClickForSync);
       }
     };
-  }, []);
+  }, [isMemo]);
   
   const getBackgroundColor = (index) => {
     const colors = [
@@ -667,12 +708,14 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         </div>
         
         <div style={{ display: 'flex' }}>
-          <div 
-            style={styles.iconButton}
-            onClick={toggleMemoList}
-          >
-            <MemoListSVG width={24} height={24} fill="#000" />
-          </div>
+          {isMemo && (
+            <div 
+              style={styles.iconButton}
+              onClick={toggleMemoList}
+            >
+              <MemoListSVG width={24} height={24} fill="#000" />
+            </div>
+          )}
           
           {isMobile ? (
             <div
@@ -710,10 +753,14 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
                 <input 
                   type="checkbox" 
                   id={`model-${file.threeFileNo}`} 
-                  defaultChecked={true}
+                  checked={modelVisibility[file.threeFileNo] === undefined ? (index === 0) : modelVisibility[file.threeFileNo]}
                   onChange={(e) => {
                     if (viewerRef.current && viewerRef.current.setModelVisibility) {
                       viewerRef.current.setModelVisibility(file.threeFileNo, e.target.checked);
+                      setModelVisibility(prev => ({
+                        ...prev,
+                        [file.threeFileNo]: e.target.checked
+                      }));
                     }
                   }}
                   style={styles.checkbox}
@@ -751,7 +798,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         </div>
       </div>
       
-      {annotations.length > 0 && (
+      {isMemo && annotations.length > 0 && (
         <div style={styles.annotationPanel}>
           <div style={styles.memoPanelHeader}>
             <h3 style={{ margin: 0 }}>{isEnglish ? 'Memo List' : '메모 목록'}</h3>
@@ -793,7 +840,7 @@ const ThreeDViewer = ({ onClose, fileList, requestFormNo, threeInfoNo, threeSj }
         </div>
       )}
       
-      {showAnnotationForm && (
+      {isMemo && showAnnotationForm && (
         <div style={styles.annotationForm}>
           <h3>
             {selectedAnnotation?.annotation.text 

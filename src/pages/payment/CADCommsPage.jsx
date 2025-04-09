@@ -150,6 +150,7 @@ const CADCommsPage = () => {
             requestFormNo={isModal.requestFormNo}
             threeInfoNo={isModal.threeInfoNo}
             threeSj={isModal.threeSj}
+            isMemo={true}
             onClose={() => setModal({ isVisible: false })}
           />
         </ModalFullPresent>

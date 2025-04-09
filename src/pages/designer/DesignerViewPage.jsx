@@ -9,10 +9,11 @@ import {
   ModalFullPresent,
   Pagenation
 } from '@components/common';
-import { ImageThumbs, ProstheticsPrice, ThreeDPotViewModal } from '@components/ui';
+import { ImageThumbs, ProstheticsPrice } from '@components/ui';
+import ThreeDViewer from '../payment/ThreeDViewer';
 import {nameMaskingFormat, replaceToBr, withCommas} from '@utils/common';
 import DOMPurify from 'dompurify';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Rating } from 'react-simple-star-rating';
 
@@ -26,12 +27,19 @@ import { useTranslation } from 'react-i18next';
 import useChat from '@components/hooks/useChat';
 import sampleProfile from "@assets/images/no_user.png";
 import ReviewMsg from "@pages/mypage/components/ReviewMsg.jsx";
+// Import ChannelService if needed, similar to CADCommsPage
+import ChannelService from '../../ChannelService';
+// Import NotiContext if needed
+import { NotiContext } from '../../components/ui/layout/hooks/useContext'; // Adjust path as necessary
 
 const DesignerViewPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { actions } = ModalStore();
   const { handleRoom } = useChat();
+  // Add NotiContext if needed, similar to CADCommsPage
+  const { setIsModalOpen } = useContext(NotiContext);
+  
   const {
     isLoading,
     user,
@@ -53,10 +61,21 @@ const DesignerViewPage = () => {
     setModal4,
     setFile,
     handleThreeDView,
-      items,
+    items,
     total, currentPage, perPage,
     setCurrentPage
   } = useDesignerViewPage();
+
+  // Add effect to handle modal visibility for ChannelTalk, similar to CADCommsPage
+  useEffect(() => {
+    if (isModal4?.isVisible) {
+      ChannelService.hideChannelButton();
+      setIsModalOpen(true); // Hide PWA banner when modal is open
+    } else {
+      ChannelService.showChannelButton();
+      setIsModalOpen(false); // Show PWA banner when modal is closed
+    }
+  }, [isModal4?.isVisible, setIsModalOpen]);
 
   const handleIsInterest = (e) => {
     if (!interest) {
@@ -113,9 +132,6 @@ const DesignerViewPage = () => {
                           {withCommas(data?.dollarPrice)} <em>P($)</em>
                         </em>
                       </span>
-                      {/* <span>
-                      거래 총 금액<em>{withCommas(data.wonPrice)}원</em>
-                    </span> */}
                     </span>
                     {user.memberSe === 'A' && (
                       <span className="sorting">
@@ -136,7 +152,6 @@ const DesignerViewPage = () => {
                       {/* 1:1 지정 요청하기 */}
                       {t('request.submit_target')}
                     </Link>
-                    {/* <Link className="bCG">채팅하기</Link> */}
                     <BaseButton label={t('base.do_chat')} className={'bCG'} onClick={() => handleRoom(data?.memberNo, 'C')} />
                   </>
                 )}
@@ -198,15 +213,6 @@ const DesignerViewPage = () => {
                       <em>
                         {withCommas(data?.dollarPrice)} <em>P($)</em>
                       </em>
-                      {/* <dd>
-                      {withCommas(data.wonPrice)}
-                      <em>P(￦)</em>
-                    </dd>{' '}
-                    /{' '}
-                    <dd>
-                      {withCommas(data.dollarPrice)}
-                      <em>P($)</em>
-                    </dd> */}
                     </dl>
                     <dl>
                       <dt>
@@ -270,10 +276,10 @@ const DesignerViewPage = () => {
                     </h4>
                     <p className="paragraph" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(replaceToBr(data.note)) }}></p>
                   </div>
+                     {/* 포트폴리오 */}
                   <div className="mBack">
                     <h4>
                       <strong>
-                        {/* 포트폴리오 */}
                         {t('version2_1.text47')}
                       </strong>
                     </h4>
@@ -295,12 +301,17 @@ const DesignerViewPage = () => {
                           setFile(el);
                         }}
                       />
-                      {/* <div className="btnArea mCase">
-                      <BaseButton label={t('version2_1.text48')} className={'btnB'} onClick={handle3d} />
-                    </div> */}
                     </div>
                   )}
                 </div>
+
+                {data?.fileList?.length > 0 && (
+                  <div className="btnArea pb0 pcCase">
+                    <BaseButton label={t('version2_1.text48')} className={'btnB'} onClick={handleThreeDView} />
+                  </div>
+                )}
+
+                <br/>
 
                 {/* 리뷰 추가 */}
                 <h3>
@@ -319,7 +330,6 @@ const DesignerViewPage = () => {
                           </li>
                       }
                       {items.map((item, idx) => {
-                        // item.registerDt
                         const datePart = item.registerDt ? item.registerDt.split(' ')[0] : '';
                         const timePart = item.registerDt ? item.registerDt.split(' ')[1].substring(0, 5) : '';
 
@@ -347,7 +357,6 @@ const DesignerViewPage = () => {
                                         <em>{item.reviewRate}</em>
                                       </span>
                                       <ReviewMsg rating={item.reviewRate}/>
-                                      {/*<strong>{ratingToMessage(item.reviewRate)}</strong>*/}
                                     </span>
                                     <p>{item.reviewCn}</p>
                                     {item.fileList.length > 0 && (
@@ -372,13 +381,6 @@ const DesignerViewPage = () => {
                   </div>
                   <Pagenation total={total} perPage={perPage} currentPage={currentPage} onPageChange={(page) => setCurrentPage(page)} />
                 </div>
-
-                {/**/}
-                {data?.fileList?.length > 0 && (
-                  <div className="btnArea pb0 pcCase">
-                    <BaseButton label={t('version2_1.text48')} className={'btnB'} onClick={handleThreeDView} />
-                  </div>
-                )}
               </article>
             </div>
           </div>
@@ -423,11 +425,12 @@ const DesignerViewPage = () => {
         </ModalPresent>
       )}
 
-      {/* 3d 뷰어 */}
+      {/* 3d 뷰어 - Updated to use ThreeDViewer instead of ThreeDPotViewModal */}
       {isModal4?.isVisible && (
         <ModalFullPresent>
-          <ThreeDPotViewModal
-            {...isModal4}
+          <ThreeDViewer
+            fileList={isModal4.fileList}
+            isMemo={false}
             onClose={() => {
               setModal4({ isVisible: false });
             }}

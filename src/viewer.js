@@ -1,4 +1,3 @@
-//viewer.js
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -21,7 +20,7 @@ let modelMap = new Map();
 let annotations = [];
 let annotationMarkers = [];
 let selectedAnnotation = null;
-let isAnnotationMode = true;
+let isAnnotationMode = false; // Default to false, will be set based on callbacks
 let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 let tempMarker = null;
@@ -165,6 +164,10 @@ function addMeshFromGeometry(geometry, fileNo) {
   
   const newMesh = new THREE.Mesh(geometry, meshMaterial);
   const meshIndex = meshes.length;
+  
+  // Set default visibility based on index
+  newMesh.visible = meshIndex === 0;
+  
   meshes.push(newMesh);
   
   if (fileNo) {
@@ -306,9 +309,14 @@ function setModelVisibility(fileNo, visible) {
       const mesh = meshes[meshIndex];
       if (mesh) {
         mesh.visible = visible;
+        // console.log(`Setting model ${fileNo} visibility to ${visible}`);
       }
     }
   }
+  // 경고 메시지 제거
+  // else {
+  //   console.warn(`Model with fileNo ${fileNo} not found in modelMap`);
+  // }
 }
 
 function createAnnotationMarker(position, index) {
@@ -385,6 +393,8 @@ function createAnnotationMarker(position, index) {
 }
 
 function addAnnotation(position, text, id = null) {
+  if (!isAnnotationMode) return null;
+  
   const index = annotations.length;
   const annotation = {
     id: id || Date.now(),
@@ -497,6 +507,8 @@ function createClickAnimation(position) {
 }
 
 function updateAnnotation(index, text) {
+  if (!isAnnotationMode) return false;
+  
   if (index >= 0 && index < annotations.length) {
     annotations[index].text = text;
     annotations[index].updatedAt = new Date();
@@ -511,6 +523,8 @@ function updateAnnotation(index, text) {
 }
 
 function deleteAnnotation(index) {
+  if (!isAnnotationMode) return false;
+  
   if (index >= 0 && index < annotations.length) {
     scene.remove(annotationMarkers[index]);
     if (annotationMarkers[index].geometry) annotationMarkers[index].geometry.dispose();
@@ -738,10 +752,11 @@ function onMouseMove(event) {
       document.body.style.cursor = 'pointer';
     }
   } else {
-    document.body.style.cursor = 'crosshair';
+    document.body.style.cursor = isAnnotationMode ? 'crosshair' : 'default';
   }
   
-  if (meshes.length > 0) {
+  // Only show temp marker in annotation mode
+  if (isAnnotationMode && meshes.length > 0) {
     const meshIntersects = raycaster.intersectObjects(meshes);
     if (meshIntersects.length > 0) {
       const point = meshIntersects[0].point;
@@ -816,7 +831,8 @@ function onMouseClick(event) {
     }
   }
   
-  if (meshes.length > 0) {
+  // Only add new annotations if in annotation mode
+  if (isAnnotationMode && meshes.length > 0) {
     const meshIntersects = raycaster.intersectObjects(meshes);
     if (meshIntersects.length > 0) {
       const point = meshIntersects[0].point;
@@ -878,7 +894,7 @@ function init() {
     side: THREE.DoubleSide
   });
   
-  document.body.style.cursor = 'crosshair';
+  document.body.style.cursor = 'default';
   
   renderer.domElement.addEventListener('mousemove', onMouseMove);
   renderer.domElement.addEventListener('click', onMouseClick);
@@ -1027,6 +1043,10 @@ async function loadModelsFromUrls(fileList) {
           fileInfo.threeFileNo
         );
         
+        if (mesh) {
+          mesh.visible = index === 0;
+        }
+        
         return mesh;
       } catch (error) {
         console.error(`Error loading model from URL ${fileInfo.threeFileUrl}:`, error);
@@ -1038,17 +1058,32 @@ async function loadModelsFromUrls(fileList) {
     
     arrangeMeshes();
     
-    console.log(`Loaded ${meshes.length} models from URLs`);
   } catch (error) {
     console.error('Error loading models from URLs:', error);
   } finally {
     hideLoadingAnimation();
   }
+  
+  // 모든 모델이 로드되었으므로 반환
+  return meshes.length;
 }
 
 function setAnnotationCallbacks(selectCallback, addCallback) {
   onAnnotationSelect = selectCallback;
   onAnnotationAdd = addCallback;
+  
+  // Set annotation mode based on whether callbacks are provided
+  isAnnotationMode = !!(selectCallback && addCallback);
+  
+  // Update cursor
+  document.body.style.cursor = isAnnotationMode ? 'crosshair' : 'default';
+  
+  // Hide temporary marker if annotation mode is disabled
+  if (!isAnnotationMode && tempMarker) {
+    tempMarker.visible = false;
+  }
+  
+  return isAnnotationMode;
 }
 
 function getAnnotations() {
@@ -1056,8 +1091,8 @@ function getAnnotations() {
 }
 
 export function toggleAnnotationMode() {
-  isAnnotationMode = true;
-  document.body.style.cursor = 'crosshair';
+  isAnnotationMode = !isAnnotationMode;
+  document.body.style.cursor = isAnnotationMode ? 'crosshair' : 'default';
   return isAnnotationMode;
 }
 
@@ -1073,7 +1108,7 @@ export function getSelectedAnnotation() {
 
 let cleanupFunction = null;
 
-export function initViewer(container, modelData, annotationSelectCallback, annotationAddCallback) {
+export function initViewer(container, modelData, annotationSelectCallback, annotationAddCallback, onModelsLoadedCallback) {
   if (cleanupFunction) {
     cleanupFunction();
     cleanupFunction = null;
@@ -1084,7 +1119,13 @@ export function initViewer(container, modelData, annotationSelectCallback, annot
   setAnnotationCallbacks(annotationSelectCallback, annotationAddCallback);
   
   if (modelData && modelData.fileList && modelData.fileList.length > 0) {
-    loadModelsFromUrls(modelData.fileList);
+    loadModelsFromUrls(modelData.fileList)
+      .then(() => {
+        // 모델 로드가 완료된 후 콜백 호출
+        if (onModelsLoadedCallback && typeof onModelsLoadedCallback === 'function') {
+          onModelsLoadedCallback();
+        }
+      });
   }
   
   return cleanupFunction;
