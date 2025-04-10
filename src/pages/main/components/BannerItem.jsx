@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import sampleProfile from '@assets/images/sample/sample8.png';
 import { useTranslation } from 'react-i18next';
 
@@ -8,18 +7,7 @@ const BannerItem = ({ element, onClick }) => {
 
   return (
     <>
-      {/* <div className="txt">
-        <div>
-          {element?.bannerTitle}
-          <strong>{element?.bannerDesc}</strong>
-          {element?.bannerUrl && (
-            <Link to="" onClick={() => onClick(element?.bannerUrl)}>
-              {t('base.view_detail')}
-            </Link>
-          )}
-        </div>
-      </div> */}
-
+     
       <div
         className="img"
         style={{ cursor: element?.bannerUrl ? 'pointer' : '' }}
