@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import PolicyModal from '../modal/PolicyModal';
 import { ModalPresent } from '@components/common';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,6 @@ const Footerr = () => {
             </Link>
             <Link to="/help/notice">{t('footer.links.notice')}</Link>
             <Link to="/help">FAQ</Link>
-            {/* 문제 있는 링크를 수정: Link 대신 a 태그 사용 */}
             <a 
               href={`${window.location.protocol}//${window.location.host}/service2`} 
               target="_blank"
@@ -66,6 +65,17 @@ const Footerr = () => {
               </span>
             </div>
           </address>
+          <div style={{ textAlign: 'right', marginTop: '20px' }}>
+            <a href="https://www.linkedin.com/company/dentner/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', marginLeft: '10px' }}>
+              <img src="https://cdn.jsdelivr.net/gh/HEOJUNFO/blockout@main/images/linkedin.png" alt="LinkedIn" style={{ width: '24px', height: '24px' }} />
+            </a>
+            <a href="https://www.facebook.com/profile.php?id=100083322402265" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', marginLeft: '10px' }}>
+              <img src="https://cdn.jsdelivr.net/gh/HEOJUNFO/blockout@main/images/facebook-square.png" alt="Facebook" style={{ width: '24px', height: '24px' }} />
+            </a>
+            <a href="https://www.instagram.com/dentner_korea/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', marginLeft: '10px' }}>
+              <img src="https://cdn.jsdelivr.net/gh/HEOJUNFO/blockout@main/images/instagram.png" alt="Instagram" style={{ width: '24px', height: '24px' }} />
+            </a>
+          </div>
           <p>COPYRIGHT © DENTNER ALL RIGHTS RESERVED.</p>
         </footer>
       </div>
