@@ -46,7 +46,7 @@ function addSpinnerStyle() {
       to { transform: rotate(360deg); }
     }
     #loading-overlay {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
