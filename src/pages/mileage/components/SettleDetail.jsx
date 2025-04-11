@@ -2,9 +2,7 @@ import { BaseButton, BaseInput, BaseSelect, Pagenation } from '@components/commo
 import { RadioSet } from '@components/ui';
 import React from 'react';
 import useSettleDetail from '../hooks/useSettleDetail';
-import PaymentItem from './PaymentItem';
 import Table from './Table';
-import DepositItem from './DepositItem';
 import SettleItem from './SettleItem';
 import { useTranslation } from 'react-i18next';
 

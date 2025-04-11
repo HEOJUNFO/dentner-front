@@ -78,6 +78,51 @@ const useSettleDetail = () => {
     }
   };
 
+  const sumCalculateAmountsByType = (items) => {
+    // A와 B 타입별 합계 초기화
+    const sums = {
+      A: 0,
+      B: 0
+    };
+    
+    console.log(items)
+    items.forEach(item => {
+      if (item.mileageUnit === 'A') {
+        console.log('item')
+        sums.A += item.calculateAmount;
+      } else if (item.mileageUnit === 'B') {
+        sums.B += item.calculateAmount;
+      }
+    });
+    
+    return sums;
+  };
+  
+  // fetchSettleList 함수 내에서 사용하는 예시
+  const fetchSettleList2 = async () => {
+    console.log(params);
+    const initialParams = params;
+    const r = await getSettleList(initialParams);
+    const { data, statusCode } = r;
+    
+    if (statusCode == 200) {
+      const { cnt, list } = data;
+      // cnt를 이용해 모든 항목을 가져오기
+      const allItemsParams = { ...params, pageCnt: cnt };
+      const fullResponse = await getSettleList(allItemsParams);
+      
+      if (fullResponse.statusCode == 200) {
+        const fullList = fullResponse.data.list;
+        
+        // 타입별 calculateAmount 합계 계산
+        const amountSums = sumCalculateAmountsByType(fullList);
+        console.log('A 타입 합계:', amountSums.A);
+        console.log('B 타입 합계:', amountSums.B);
+        console.log('전체 합계:', amountSums.A + amountSums.B);
+      }
+    }
+  };
+
   //기간검색버튼
   const onClickSearch = () => {
     const [fromDateFilter, toDateFilter] = filter.split(' ~ ');
@@ -158,6 +203,7 @@ const useSettleDetail = () => {
 
   useEffect(() => {
     fetchSettleList();
+    fetchSettleList2();
   }, [params]);
 
   return {
