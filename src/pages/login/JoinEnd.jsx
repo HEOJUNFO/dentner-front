@@ -16,7 +16,7 @@ const JoinEnd = () => {
     // 로컬 스토리지 삭제
     localStorage.clear();
     // 페이지 새로고침
-    window.location.reload();
+    window.location.href = '/'
   };
 
   return (
@@ -38,18 +38,28 @@ const JoinEnd = () => {
               {/* 회원 승인은 가입 신청 후 영업일 기준 최대 1~3일이 소요됩니다. */}
               {t('version2_1.text127')}
             </p>
-            <div className="btnGroup">
               <Link to="/" className="btnB" >
                 {/* 홈으로 이동 */}
                 {t('version2_1.text52')}
               </Link>
-              <div>
-             </div>
-              <button onClick={handleLogout} className="btnB logout">
-                {/* 로그아웃 */}
-                {t('common.logout', '로그아웃')}
-              </button>
-            </div>
+              <button 
+  onClick={handleLogout} 
+  style={{
+    marginTop:'15px',
+    padding: '10px 20px',
+    backgroundColor: 'white',
+    color: '#666',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    marginLeft: '10px',
+    fontWeight: '500'
+  }}
+>
+  {/* 로그아웃 */}
+  {t('common.logout', '로그아웃')}
+</button>
           </div>
         )}
         {memberApprovalSe === 'B' && (
