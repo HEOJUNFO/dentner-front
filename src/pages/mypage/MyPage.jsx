@@ -47,9 +47,6 @@ const MyPage = () => {
                 <span className="profileImg">
                   <img src={userInfo.profileImg} />
                 </span>
-                {/* <span className="profileUpload">
-                  <input type="file" id="file1" />
-                </span> */}
               </span>
               <strong>{userInfo?.memberNickName}</strong>
               <ItemTag items={userInfo?.cad} className="itemTag" />
@@ -63,7 +60,6 @@ const MyPage = () => {
           <div style={{ display: `${kindValue ? 'none' : 'block'}` }}>
             <div className={`${user?.multiProfileCnt > 1 ? 'myPageTopOffice' : 'myPageTopOffice'} yetDesigner`}>
               {' '}
-              {/* 치자이너 프로필 있을 경우 className='myPageTopOffice' */}
               {user?.multiProfileCnt === 1 && (
                 <div className="addDesigner">
                   <p>
@@ -76,7 +72,6 @@ const MyPage = () => {
                 </div>
               )}
               <div className="back">
-                <MypageTopCenter />
                 <Link to="/mypage/modify" className="btnPModify">
                   {t('version2_1.text35')}
                 </Link>
