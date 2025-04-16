@@ -11,6 +11,14 @@ const JoinEnd = () => {
   const { t } = useTranslation();
   const { user, memberApprovalSe } = useJoinEnd();
 
+  // 로그아웃 처리 함수
+  const handleLogout = () => {
+    // 로컬 스토리지 삭제
+    localStorage.clear();
+    // 페이지 새로고침
+    window.location.reload();
+  };
+
   return (
     <div className={`memberLayout joinend`}>
       <div className="joinStep3">
@@ -30,10 +38,18 @@ const JoinEnd = () => {
               {/* 회원 승인은 가입 신청 후 영업일 기준 최대 1~3일이 소요됩니다. */}
               {t('version2_1.text127')}
             </p>
-            <Link to="/" className="btnB">
-              {/* 홈으로 이동 */}
-              {t('version2_1.text52')}
-            </Link>
+            <div className="btnGroup">
+              <Link to="/" className="btnB" >
+                {/* 홈으로 이동 */}
+                {t('version2_1.text52')}
+              </Link>
+              <div>
+             </div>
+              <button onClick={handleLogout} className="btnB logout">
+                {/* 로그아웃 */}
+                {t('common.logout', '로그아웃')}
+              </button>
+            </div>
           </div>
         )}
         {memberApprovalSe === 'B' && (
