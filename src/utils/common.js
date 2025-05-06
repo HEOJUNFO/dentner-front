@@ -121,11 +121,18 @@ export const isValidateName = (str) => {
  * @param str
  * @returns
  */
-export const isValidatePhone = (str) => {
-  // 간단한 전화번호 유효성 검사를 위한 정규 표현식 사용
-  const regex = /^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$/;
-  // const regex = /^[0][1][016789][1-9][0-9]{2,3}[1-9][0-9]{3}$/;
-  return regex.test(str);
+export const isValidatePhone = (str, type = 1) => {
+  console.log(type)
+  // 타입이 1이면 내국인(한국), 2이면 외국인
+  if (type === 1) {
+    // 한국 휴대폰 번호 검증 (기존 로직 유지)
+    const koreaRegex = /^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$/;
+    return koreaRegex.test(str);
+  } else {
+    // 해외 전화번호 검증 (7-15자리 숫자)
+    const foreignRegex = /^\d{7,15}$/;
+    return foreignRegex.test(str);
+  }
 };
 
 /**
