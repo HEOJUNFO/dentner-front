@@ -122,7 +122,6 @@ export const isValidateName = (str) => {
  * @returns
  */
 export const isValidatePhone = (str, type = 1) => {
-  console.log(type)
   // 타입이 1이면 내국인(한국), 2이면 외국인
   if (type === 1) {
     // 한국 휴대폰 번호 검증 (기존 로직 유지)

@@ -49,7 +49,6 @@ const useSmsVerify = ({ seconds, onVerifyClick, certification, type, email, err,
     //   if (onSendClick) onSendClick(false);
     //   return;
     // }
-    console.log(type)
     const isPhone = isValidatePhone(params.phone.value, type);
     if (!isPhone) {
       handleErrorChange('phone', t('error.phone_type'));
