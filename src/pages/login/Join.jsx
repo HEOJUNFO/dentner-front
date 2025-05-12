@@ -55,7 +55,7 @@ const Join = () => {
                 {/*  onClick={() => navigate('/login/join/client')} */}
               </dd>
             </dl>
-            <dl style={{ cursor: 'pointer' }} onClick={handleDentalLabClick}>
+            <dl style={{ cursor: 'pointer' }} onClick={() => handleNav('/login/join/center', state)}>
               <dt>
                 {/* 치과기공소 */}
                 {t('faq.dental_lab')}
@@ -71,7 +71,7 @@ const Join = () => {
                 </span>
               </dd>
               <dd>
-                <button className="btnL ss" onClick={handleDentalLabClick}>
+                <button className="btnL ss" >
                   {t('version2_1.text117')}
                 </button>
               </dd>
