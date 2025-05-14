@@ -15,6 +15,8 @@ const Join = () => {
   const handleDentalLabClick = (e) => {
     e.stopPropagation(); // 이벤트 버블링 방지
     alert("치자이너 회원으로 회원가입해주세요");
+    // 알림 후 치자이너 가입 페이지로 이동
+    handleNav('/login/join/designer', state);
   };
 
   return (
@@ -55,7 +57,7 @@ const Join = () => {
                 {/*  onClick={() => navigate('/login/join/client')} */}
               </dd>
             </dl>
-            <dl style={{ cursor: 'pointer' }} onClick={() => handleNav('/login/join/center', state)}>
+            <dl style={{ cursor: 'pointer' }} onClick={handleDentalLabClick}>
               <dt>
                 {/* 치과기공소 */}
                 {t('faq.dental_lab')}
@@ -71,7 +73,8 @@ const Join = () => {
                 </span>
               </dd>
               <dd>
-                <button className="btnL ss" >
+                <button className="btnL ss" onClick={handleDentalLabClick}>
+                  {/* 치과기공소로 회원가입 */}
                   {t('version2_1.text117')}
                 </button>
               </dd>
