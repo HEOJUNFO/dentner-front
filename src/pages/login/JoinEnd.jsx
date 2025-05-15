@@ -101,6 +101,24 @@ const JoinEnd = () => {
               {/* 다시 가입 신청하기 */}
               {t('version2_1.text135')}
             </Link>
+            <button 
+  onClick={handleLogout} 
+  style={{
+    marginTop:'15px',
+    padding: '10px 20px',
+    backgroundColor: 'white',
+    color: '#666',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    marginLeft: '10px',
+    fontWeight: '500'
+  }}
+>
+  {/* 로그아웃 */}
+  {t('common.logout', '로그아웃')}
+</button>
           </div>
         )}
       </div>
